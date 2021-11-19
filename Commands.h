@@ -4,6 +4,9 @@
 #include <vector>
 #include <string.h>
 #include <string>
+#include <time.h>
+#include <sys/wait.h>
+
 
 #define PROCESSES_MAX_NUM (100)
 #define PROCESS_NAME_MAX_LENGTH (50)
@@ -72,7 +75,8 @@ public:
 };
 
 class ChangeDirCommand : public BuiltInCommand {
-// TODO: Add your data members public:
+public:
+    char **plastPwd;
     ChangeDirCommand(const char *cmd_line, char **plastPwd);
 
     virtual ~ChangeDirCommand() {}
@@ -101,7 +105,8 @@ public:
 class JobsList;
 
 class QuitCommand : public BuiltInCommand {
-// TODO: Add your data members public:
+public:
+    JobsList *jobs;
     QuitCommand(const char *cmd_line, JobsList *jobs);
 
     virtual ~QuitCommand() {}
@@ -113,10 +118,20 @@ class QuitCommand : public BuiltInCommand {
 class JobsList {
 public:
     class JobEntry {
-        // TODO: Add your data members
+    public:
+        int job_id;
+        pid_t job_pid;
+        time_t time_created;
+        std::string command;
+        bool isStopped;
+        bool finished;
+
+        JobEntry(int job_id, pid_t job_pid, time_t time_created, std::string command, bool isStopped, bool finished);
     };
-    // TODO: Add your data members
-public:
+
+    std::vector<JobEntry> job_list;
+    int max_job_id;
+
     JobsList();
 
     ~JobsList();
@@ -140,7 +155,7 @@ public:
 };
 
 class JobsCommand : public BuiltInCommand {
-    // TODO: Add your data members
+    JobsList *jobs;
 public:
     JobsCommand(const char *cmd_line, JobsList *jobs);
 
@@ -150,7 +165,7 @@ public:
 };
 
 class KillCommand : public BuiltInCommand {
-    // TODO: Add your data members
+    JobsList *jobs;
 public:
     KillCommand(const char *cmd_line, JobsList *jobs);
 
@@ -160,7 +175,7 @@ public:
 };
 
 class ForegroundCommand : public BuiltInCommand {
-    // TODO: Add your data members
+    JobsList *jobs;
 public:
     ForegroundCommand(const char *cmd_line, JobsList *jobs);
 
@@ -169,12 +184,13 @@ public:
     void execute() override;
 };
 
+
 class BackgroundCommand : public BuiltInCommand {
-    // TODO: Add your data members
+    JobsList *jobs;
 public:
     BackgroundCommand(const char *cmd_line, JobsList *jobs);
 
-    virtual ~BackgroundCommand() {}
+    virtual ~BackgroundCommand(){}
 
     void execute() override;
 };
@@ -196,6 +212,9 @@ private:
 
 public:
     std::string smash_prompt;
+    pid_t pid;
+    char* last_directory;
+    JobsList job_list;
 
     Command *CreateCommand(const char *cmd_line);
 
@@ -211,7 +230,7 @@ public:
     ~SmallShell();
 
     void executeCommand(const char *cmd_line);
-    // TODO: add extra methods as needed
+    void setLastDirectory(char *dir);
 };
 
 #endif //SMASH_COMMAND_H_
