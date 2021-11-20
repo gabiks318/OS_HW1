@@ -22,8 +22,9 @@ public:
     virtual ~Command() {};
 
     virtual void execute() = 0;
-    //virtual void prepare();
-    //virtual void cleanup();
+    const char* get_cmd_line(){return cmd_line;}
+//    virtual void prepare();
+//    virtual void cleanup();
     // TODO: Add your extra methods if needed
 };
 
@@ -54,15 +55,21 @@ public:
 };
 
 class RedirectionCommand : public Command {
-    // TODO: Add your data members
+    char* command;
+    char* filename;
+    bool append;
+    int stdout_copy;
+    int fd;
 public:
     explicit RedirectionCommand(const char *cmd_line);
 
-    virtual ~RedirectionCommand() {}
+    virtual ~RedirectionCommand() {
+        cleanup();
+    }
 
     void execute() override;
-    //void prepare() override;
-    //void cleanup() override;
+    void prepare();
+    void cleanup();
 };
 
 class ChpromptCommand : public BuiltInCommand {
@@ -124,9 +131,8 @@ public:
         time_t time_created;
         std::string command;
         bool isStopped;
-        bool finished;
 
-        JobEntry(int job_id, pid_t job_pid, time_t time_created, std::string command, bool isStopped, bool finished);
+        JobEntry(int job_id, pid_t job_pid, time_t time_created, std::string command, bool isStopped);
     };
 
     std::vector<JobEntry> job_list;
@@ -136,7 +142,7 @@ public:
 
     ~JobsList();
 
-    void addJob(Command *cmd, bool isStopped = false);
+    void addJob(Command *cmd, pid_t pid ,bool isStopped = false);
 
     void printJobsList();
 
@@ -215,6 +221,8 @@ public:
     pid_t pid;
     char* last_directory;
     JobsList job_list;
+    pid_t current_process;
+    Command* current_cmd;
 
     Command *CreateCommand(const char *cmd_line);
 
