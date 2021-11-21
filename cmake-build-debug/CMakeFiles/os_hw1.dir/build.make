@@ -57,41 +57,93 @@ include CMakeFiles/os_hw1.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/os_hw1.dir/flags.make
 
-CMakeFiles/os_hw1.dir/main.cpp.o: CMakeFiles/os_hw1.dir/flags.make
-CMakeFiles/os_hw1.dir/main.cpp.o: ../main.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/tmp/tmp.G2VUpIh0Xo/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/os_hw1.dir/main.cpp.o"
-	/usr/bin/g++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/os_hw1.dir/main.cpp.o -c /tmp/tmp.G2VUpIh0Xo/main.cpp
+CMakeFiles/os_hw1.dir/smash.cpp.o: CMakeFiles/os_hw1.dir/flags.make
+CMakeFiles/os_hw1.dir/smash.cpp.o: ../smash.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/tmp/tmp.G2VUpIh0Xo/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/os_hw1.dir/smash.cpp.o"
+	/usr/bin/g++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/os_hw1.dir/smash.cpp.o -c /tmp/tmp.G2VUpIh0Xo/smash.cpp
 
-CMakeFiles/os_hw1.dir/main.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/os_hw1.dir/main.cpp.i"
-	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /tmp/tmp.G2VUpIh0Xo/main.cpp > CMakeFiles/os_hw1.dir/main.cpp.i
+CMakeFiles/os_hw1.dir/smash.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/os_hw1.dir/smash.cpp.i"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /tmp/tmp.G2VUpIh0Xo/smash.cpp > CMakeFiles/os_hw1.dir/smash.cpp.i
 
-CMakeFiles/os_hw1.dir/main.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/os_hw1.dir/main.cpp.s"
-	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /tmp/tmp.G2VUpIh0Xo/main.cpp -o CMakeFiles/os_hw1.dir/main.cpp.s
+CMakeFiles/os_hw1.dir/smash.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/os_hw1.dir/smash.cpp.s"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /tmp/tmp.G2VUpIh0Xo/smash.cpp -o CMakeFiles/os_hw1.dir/smash.cpp.s
 
-CMakeFiles/os_hw1.dir/main.cpp.o.requires:
+CMakeFiles/os_hw1.dir/smash.cpp.o.requires:
 
-.PHONY : CMakeFiles/os_hw1.dir/main.cpp.o.requires
+.PHONY : CMakeFiles/os_hw1.dir/smash.cpp.o.requires
 
-CMakeFiles/os_hw1.dir/main.cpp.o.provides: CMakeFiles/os_hw1.dir/main.cpp.o.requires
-	$(MAKE) -f CMakeFiles/os_hw1.dir/build.make CMakeFiles/os_hw1.dir/main.cpp.o.provides.build
-.PHONY : CMakeFiles/os_hw1.dir/main.cpp.o.provides
+CMakeFiles/os_hw1.dir/smash.cpp.o.provides: CMakeFiles/os_hw1.dir/smash.cpp.o.requires
+	$(MAKE) -f CMakeFiles/os_hw1.dir/build.make CMakeFiles/os_hw1.dir/smash.cpp.o.provides.build
+.PHONY : CMakeFiles/os_hw1.dir/smash.cpp.o.provides
 
-CMakeFiles/os_hw1.dir/main.cpp.o.provides.build: CMakeFiles/os_hw1.dir/main.cpp.o
+CMakeFiles/os_hw1.dir/smash.cpp.o.provides.build: CMakeFiles/os_hw1.dir/smash.cpp.o
+
+
+CMakeFiles/os_hw1.dir/Commands.cpp.o: CMakeFiles/os_hw1.dir/flags.make
+CMakeFiles/os_hw1.dir/Commands.cpp.o: ../Commands.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/tmp/tmp.G2VUpIh0Xo/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/os_hw1.dir/Commands.cpp.o"
+	/usr/bin/g++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/os_hw1.dir/Commands.cpp.o -c /tmp/tmp.G2VUpIh0Xo/Commands.cpp
+
+CMakeFiles/os_hw1.dir/Commands.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/os_hw1.dir/Commands.cpp.i"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /tmp/tmp.G2VUpIh0Xo/Commands.cpp > CMakeFiles/os_hw1.dir/Commands.cpp.i
+
+CMakeFiles/os_hw1.dir/Commands.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/os_hw1.dir/Commands.cpp.s"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /tmp/tmp.G2VUpIh0Xo/Commands.cpp -o CMakeFiles/os_hw1.dir/Commands.cpp.s
+
+CMakeFiles/os_hw1.dir/Commands.cpp.o.requires:
+
+.PHONY : CMakeFiles/os_hw1.dir/Commands.cpp.o.requires
+
+CMakeFiles/os_hw1.dir/Commands.cpp.o.provides: CMakeFiles/os_hw1.dir/Commands.cpp.o.requires
+	$(MAKE) -f CMakeFiles/os_hw1.dir/build.make CMakeFiles/os_hw1.dir/Commands.cpp.o.provides.build
+.PHONY : CMakeFiles/os_hw1.dir/Commands.cpp.o.provides
+
+CMakeFiles/os_hw1.dir/Commands.cpp.o.provides.build: CMakeFiles/os_hw1.dir/Commands.cpp.o
+
+
+CMakeFiles/os_hw1.dir/signals.cpp.o: CMakeFiles/os_hw1.dir/flags.make
+CMakeFiles/os_hw1.dir/signals.cpp.o: ../signals.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/tmp/tmp.G2VUpIh0Xo/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/os_hw1.dir/signals.cpp.o"
+	/usr/bin/g++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/os_hw1.dir/signals.cpp.o -c /tmp/tmp.G2VUpIh0Xo/signals.cpp
+
+CMakeFiles/os_hw1.dir/signals.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/os_hw1.dir/signals.cpp.i"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /tmp/tmp.G2VUpIh0Xo/signals.cpp > CMakeFiles/os_hw1.dir/signals.cpp.i
+
+CMakeFiles/os_hw1.dir/signals.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/os_hw1.dir/signals.cpp.s"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /tmp/tmp.G2VUpIh0Xo/signals.cpp -o CMakeFiles/os_hw1.dir/signals.cpp.s
+
+CMakeFiles/os_hw1.dir/signals.cpp.o.requires:
+
+.PHONY : CMakeFiles/os_hw1.dir/signals.cpp.o.requires
+
+CMakeFiles/os_hw1.dir/signals.cpp.o.provides: CMakeFiles/os_hw1.dir/signals.cpp.o.requires
+	$(MAKE) -f CMakeFiles/os_hw1.dir/build.make CMakeFiles/os_hw1.dir/signals.cpp.o.provides.build
+.PHONY : CMakeFiles/os_hw1.dir/signals.cpp.o.provides
+
+CMakeFiles/os_hw1.dir/signals.cpp.o.provides.build: CMakeFiles/os_hw1.dir/signals.cpp.o
 
 
 # Object files for target os_hw1
 os_hw1_OBJECTS = \
-"CMakeFiles/os_hw1.dir/main.cpp.o"
+"CMakeFiles/os_hw1.dir/smash.cpp.o" \
+"CMakeFiles/os_hw1.dir/Commands.cpp.o" \
+"CMakeFiles/os_hw1.dir/signals.cpp.o"
 
 # External object files for target os_hw1
 os_hw1_EXTERNAL_OBJECTS =
 
-os_hw1: CMakeFiles/os_hw1.dir/main.cpp.o
+os_hw1: CMakeFiles/os_hw1.dir/smash.cpp.o
+os_hw1: CMakeFiles/os_hw1.dir/Commands.cpp.o
+os_hw1: CMakeFiles/os_hw1.dir/signals.cpp.o
 os_hw1: CMakeFiles/os_hw1.dir/build.make
 os_hw1: CMakeFiles/os_hw1.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/tmp/tmp.G2VUpIh0Xo/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable os_hw1"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/tmp/tmp.G2VUpIh0Xo/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable os_hw1"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/os_hw1.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -99,7 +151,9 @@ CMakeFiles/os_hw1.dir/build: os_hw1
 
 .PHONY : CMakeFiles/os_hw1.dir/build
 
-CMakeFiles/os_hw1.dir/requires: CMakeFiles/os_hw1.dir/main.cpp.o.requires
+CMakeFiles/os_hw1.dir/requires: CMakeFiles/os_hw1.dir/smash.cpp.o.requires
+CMakeFiles/os_hw1.dir/requires: CMakeFiles/os_hw1.dir/Commands.cpp.o.requires
+CMakeFiles/os_hw1.dir/requires: CMakeFiles/os_hw1.dir/signals.cpp.o.requires
 
 .PHONY : CMakeFiles/os_hw1.dir/requires
 

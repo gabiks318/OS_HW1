@@ -123,32 +123,86 @@ os_hw1/fast:
 	$(MAKE) -f CMakeFiles/os_hw1.dir/build.make CMakeFiles/os_hw1.dir/build
 .PHONY : os_hw1/fast
 
-main.o: main.cpp.o
+Commands.o: Commands.cpp.o
 
-.PHONY : main.o
+.PHONY : Commands.o
 
 # target to build an object file
-main.cpp.o:
-	$(MAKE) -f CMakeFiles/os_hw1.dir/build.make CMakeFiles/os_hw1.dir/main.cpp.o
-.PHONY : main.cpp.o
+Commands.cpp.o:
+	$(MAKE) -f CMakeFiles/os_hw1.dir/build.make CMakeFiles/os_hw1.dir/Commands.cpp.o
+.PHONY : Commands.cpp.o
 
-main.i: main.cpp.i
+Commands.i: Commands.cpp.i
 
-.PHONY : main.i
+.PHONY : Commands.i
 
 # target to preprocess a source file
-main.cpp.i:
-	$(MAKE) -f CMakeFiles/os_hw1.dir/build.make CMakeFiles/os_hw1.dir/main.cpp.i
-.PHONY : main.cpp.i
+Commands.cpp.i:
+	$(MAKE) -f CMakeFiles/os_hw1.dir/build.make CMakeFiles/os_hw1.dir/Commands.cpp.i
+.PHONY : Commands.cpp.i
 
-main.s: main.cpp.s
+Commands.s: Commands.cpp.s
 
-.PHONY : main.s
+.PHONY : Commands.s
 
 # target to generate assembly for a file
-main.cpp.s:
-	$(MAKE) -f CMakeFiles/os_hw1.dir/build.make CMakeFiles/os_hw1.dir/main.cpp.s
-.PHONY : main.cpp.s
+Commands.cpp.s:
+	$(MAKE) -f CMakeFiles/os_hw1.dir/build.make CMakeFiles/os_hw1.dir/Commands.cpp.s
+.PHONY : Commands.cpp.s
+
+signals.o: signals.cpp.o
+
+.PHONY : signals.o
+
+# target to build an object file
+signals.cpp.o:
+	$(MAKE) -f CMakeFiles/os_hw1.dir/build.make CMakeFiles/os_hw1.dir/signals.cpp.o
+.PHONY : signals.cpp.o
+
+signals.i: signals.cpp.i
+
+.PHONY : signals.i
+
+# target to preprocess a source file
+signals.cpp.i:
+	$(MAKE) -f CMakeFiles/os_hw1.dir/build.make CMakeFiles/os_hw1.dir/signals.cpp.i
+.PHONY : signals.cpp.i
+
+signals.s: signals.cpp.s
+
+.PHONY : signals.s
+
+# target to generate assembly for a file
+signals.cpp.s:
+	$(MAKE) -f CMakeFiles/os_hw1.dir/build.make CMakeFiles/os_hw1.dir/signals.cpp.s
+.PHONY : signals.cpp.s
+
+smash.o: smash.cpp.o
+
+.PHONY : smash.o
+
+# target to build an object file
+smash.cpp.o:
+	$(MAKE) -f CMakeFiles/os_hw1.dir/build.make CMakeFiles/os_hw1.dir/smash.cpp.o
+.PHONY : smash.cpp.o
+
+smash.i: smash.cpp.i
+
+.PHONY : smash.i
+
+# target to preprocess a source file
+smash.cpp.i:
+	$(MAKE) -f CMakeFiles/os_hw1.dir/build.make CMakeFiles/os_hw1.dir/smash.cpp.i
+.PHONY : smash.cpp.i
+
+smash.s: smash.cpp.s
+
+.PHONY : smash.s
+
+# target to generate assembly for a file
+smash.cpp.s:
+	$(MAKE) -f CMakeFiles/os_hw1.dir/build.make CMakeFiles/os_hw1.dir/smash.cpp.s
+.PHONY : smash.cpp.s
 
 # Help Target
 help:
@@ -159,9 +213,15 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... os_hw1"
 	@echo "... edit_cache"
-	@echo "... main.o"
-	@echo "... main.i"
-	@echo "... main.s"
+	@echo "... Commands.o"
+	@echo "... Commands.i"
+	@echo "... Commands.s"
+	@echo "... signals.o"
+	@echo "... signals.i"
+	@echo "... signals.s"
+	@echo "... smash.o"
+	@echo "... smash.i"
+	@echo "... smash.s"
 .PHONY : help
 
 

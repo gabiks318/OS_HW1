@@ -1,5 +1,7 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/os_hw1.dir/main.cpp.o"
+  "CMakeFiles/os_hw1.dir/smash.cpp.o"
+  "CMakeFiles/os_hw1.dir/Commands.cpp.o"
+  "CMakeFiles/os_hw1.dir/signals.cpp.o"
   "os_hw1.pdb"
   "os_hw1"
 )

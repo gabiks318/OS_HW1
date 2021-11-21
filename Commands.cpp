@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <string.h>
+#include <fstream>
 #include <iostream>
 #include <vector>
 #include <sstream>
@@ -43,24 +44,55 @@ int _parseCommandLine(const char *cmd_line, char **args) {
     // Split into different arguments
     FUNC_ENTRY()
     int i = 0;
+    bool failed = false;
     std::istringstream iss(_trim(string(cmd_line)).c_str());
     for (std::string s; iss >> s;) {
         args[i] = (char *) malloc(s.length() + 1);
+        if(!args[i]){
+            failed = true;
+            break;
+        }
         memset(args[i], 0, s.length() + 1);
         strcpy(args[i], s.c_str());
-        args[++i] = NULL;
+        i++;
+    }
+    if(failed){
+        for(int j = 0; j < i; j++)
+            free(args[j]);
+        i = -1;
     }
     return i;
 
     FUNC_EXIT()
 }
 
-void free_args(char **args, int arg_num) {
+
+char** init_args(const char* cmd_line, int* num_of_args){
+    char **args = (char **) malloc(COMMAND_MAX_ARGS * sizeof(char**));
+    if(!args)
+        return nullptr;
+    for (int i = 0; i < COMMAND_MAX_ARGS; i++)
+        args[i] = nullptr;
+    int num = _parseCommandLine(cmd_line, args);
+    if(num == -1)
+        args = nullptr;
+    *num_of_args = num;
+    return args;
+}
+
+void free_args(char** args, int arg_num){
+    if(!args)
+        return;
 
     for (int i = 0; i < arg_num; i++) {
-        if (!args[i])
+        if (args[i])
             free(args[i]);
     }
+    free(args);
+}
+
+void print_sys_error(string sys_call){
+    cerr << "smash error " << sys_call << " failed";
 }
 
 
@@ -126,6 +158,10 @@ Command *SmallShell::CreateCommand(const char *cmd_line) {
         return new RedirectionCommand(cmd_line);
     }
 
+    if(strstr(cmd_line, " | ") != NULL || strstr(cmd_line, " |& ")){
+        return new PipeCommand(cmd_line);
+    }
+
     if (firstWord.compare("chprompt") == 0) {
         return new ChpromptCommand(cmd_line);
     } else if (firstWord.compare("showpid") == 0) {
@@ -153,12 +189,12 @@ Command *SmallShell::CreateCommand(const char *cmd_line) {
 
 void SmallShell::executeCommand(const char *cmd_line) {
 
+    if(string(cmd_line).find_first_not_of(" \n\r\t\f\v") == string::npos)
+        return;
     Command *cmd = CreateCommand(cmd_line);
     job_list.removeFinishedJobs();
     cmd->execute();
-    cout << "Freeee 1" << endl;
     delete cmd;
-    cout << "Freeee finished" << endl;
     current_process = -1;
     current_cmd = nullptr;
 }
@@ -180,7 +216,6 @@ void JobsList::removeFinishedJobs() {
         return;
     }
 
-// TODO: If there
     for (auto it = job_list.begin(); it != job_list.end(); ++it) {
         auto job = *it;
         int status;
@@ -263,8 +298,13 @@ ChpromptCommand::ChpromptCommand(const char *cmd_line) : BuiltInCommand(cmd_line
 }
 
 void ChpromptCommand::execute() {
-    char **args = (char **) malloc(COMMAND_MAX_ARGS);
-    int num_of_args = _parseCommandLine(this->cmd_line, args);
+    int num_of_args;
+    char** args = init_args(this->cmd_line, &num_of_args);
+    if(!args) {
+        string sys_call("malloc");
+        print_sys_error(sys_call);
+        return;
+    }
     SmallShell &shell = SmallShell::getInstance();
     if (num_of_args == 1) {
         shell.smash_prompt = "smash";
@@ -272,7 +312,6 @@ void ChpromptCommand::execute() {
         shell.smash_prompt = args[1];
     }
     free_args(args, num_of_args);
-    free(args);
 }
 
 /* ShowPidCommand
@@ -316,11 +355,13 @@ ChangeDirCommand::ChangeDirCommand(const char *cmd_line, char **plastPwd) : Buil
 
 void ChangeDirCommand::execute() {
 
-// TODO: doesn't work with too many arguments
-
-    char **args = (char **) malloc(COMMAND_MAX_ARGS);
-    int num_of_args = _parseCommandLine(this->cmd_line, args);
-
+    int num_of_args;
+    char **args = init_args(this->cmd_line, &num_of_args);
+    if(!args) {
+        string sys_call("malloc");
+        print_sys_error(sys_call);
+        return;
+    }
     SmallShell &shell = SmallShell::getInstance();
 
     if (num_of_args > 2) {
@@ -330,15 +371,26 @@ void ChangeDirCommand::execute() {
     } else {
         long max_size = pathconf(".", _PC_PATH_MAX);
         char *buffer = (char *) malloc((size_t) max_size);
-        getcwd(buffer, (size_t) max_size);
+        if(!buffer) {
+            print_sys_error("malloc");
+            return;
+        }
+        if(getcwd(buffer, (size_t) max_size) == NULL){
+            print_sys_error("getcwd");
+            free(buffer);
+            return;
+        }
         string next_dir = args[1];
 
-        if (next_dir.compare("-") == 0) {
+        if (next_dir == "-") {
             if (!(*plastPwd)) {
                 cerr << "smash error: cd: OLDPWD not set" << endl;
+                free(buffer);
             } else {
-                if (chdir(*plastPwd) != 0) {
-                    // TODO: Error handling
+                if (chdir(*plastPwd) == SYS_FAIL) {
+                    print_sys_error("chdir");
+                    free(buffer);
+                    return;
                 } else {
                     if (*plastPwd)
                         free(*plastPwd);
@@ -356,8 +408,6 @@ void ChangeDirCommand::execute() {
         }
     }
     free_args(args, num_of_args);
-    if (args)
-        free(args);
 }
 
 /* Jobs Command
@@ -388,8 +438,8 @@ void JobsCommand::execute() {
 KillCommand::KillCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line), jobs(jobs) {}
 
 void KillCommand::execute() {
-    char **args = (char **) malloc(COMMAND_MAX_ARGS);
-    int num_of_args = _parseCommandLine(this->cmd_line, args);
+    int num_of_args;
+    char **args = init_args(this->cmd_line, &num_of_args);
     if (num_of_args != 3) {
         cerr << "smash error: kill: invalid arguments" << endl;
     } else {
@@ -421,8 +471,9 @@ void KillCommand::execute() {
 ForegroundCommand::ForegroundCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line), jobs(jobs) {}
 
 void ForegroundCommand::execute() {
-    char **args = (char **) malloc(COMMAND_MAX_ARGS);
-    int num_of_args = _parseCommandLine(this->cmd_line, args);
+    // TODO: add free
+    int num_of_args;
+    char **args = init_args(this->cmd_line, &num_of_args);
     SmallShell &smash = SmallShell::getInstance();
     if (num_of_args == 2) {
         int job_id = stoi(args[1]);
@@ -474,8 +525,9 @@ void ForegroundCommand::execute() {
 BackgroundCommand::BackgroundCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line), jobs(jobs) {}
 
 void BackgroundCommand::execute() {
-    char **args = (char **) malloc(COMMAND_MAX_ARGS);
-    int num_of_args = _parseCommandLine(this->cmd_line, args);
+    // TODO: add free
+    int num_of_args;
+    char **args = init_args(this->cmd_line, &num_of_args);
     if (num_of_args == 2) {
         int job_id = stoi(args[1]);
         if (job_id < 0) { //TODO: make sure this is correct
@@ -510,6 +562,34 @@ void BackgroundCommand::execute() {
     }
 }
 
+HeadCommand::HeadCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
+void HeadCommand::execute() {
+// TODO: check for valid args
+    int line_num = 10;
+    string line;
+    char *filename;
+    int num_of_args;
+    char **args = init_args(this->cmd_line, &num_of_args);
+
+    if(num_of_args == 3 || num_of_args == 2){
+        if(num_of_args == 3){
+            line_num = stoi(string(args[1]).erase(0, 1));
+            filename = args[2];
+        } else {
+            filename = args[1];
+        }
+        std::ifstream file(filename);
+        for(int i = 0; i < line_num && getline(file, line) ; i++){
+            cout << line;
+        }
+    }  else {
+        if(num_of_args == 1){
+            cerr << "smash error: head: not enough arguments" << endl;
+        }
+    }
+
+}
+
 /* Quit Command
  * quit command exits the smash.
  */
@@ -517,12 +597,15 @@ void BackgroundCommand::execute() {
 QuitCommand::QuitCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line), jobs(jobs) {}
 
 void QuitCommand::execute() {
-    char **args = (char **) malloc(COMMAND_MAX_ARGS);
-    int num_of_args = _parseCommandLine(this->cmd_line, args);
+    int num_of_args;
+    char **args = init_args(this->cmd_line, &num_of_args);
     if (num_of_args == 2 && string(args[1]).compare("kill") == 0) {
         cout << "smash: sending SIGKILL signal to " << jobs->job_list.size() << " jobs:" << endl;
         jobs->killAllJobs();
     }
+    free_args(args, num_of_args);
+//    TODO: make sure its ok
+    delete this;
     exit(0);
 }
 
@@ -531,7 +614,7 @@ void QuitCommand::execute() {
 ExternalCommand::ExternalCommand(const char *cmd_line) : Command(cmd_line) {}
 
 void ExternalCommand::execute() {
-    char *cmd_line_copy = (char *) malloc(sizeof(char) * strlen(cmd_line));
+    char *cmd_line_copy = (char *) malloc(sizeof(char) * (strlen(cmd_line) + 1));
     strcpy(cmd_line_copy, cmd_line);
     bool is_background = _isBackgroundCommand(cmd_line);
     if (is_background) {
@@ -566,19 +649,17 @@ void ExternalCommand::execute() {
 
 RedirectionCommand::RedirectionCommand(const char *cmd_line) : Command(cmd_line) {
 // TODO: check what to do with more then 3 arguments
-    char *cmd_line_copy = (char *) malloc(sizeof(char) * strlen(cmd_line));
-    strcpy(cmd_line_copy, cmd_line);
-    if (_isBackgroundCommand(cmd_line)) {
-        _removeBackgroundSign(cmd_line_copy);
-    }
-    char **args = (char **) malloc(COMMAND_MAX_ARGS);
-    int num_of_args = _parseCommandLine(cmd_line_copy, args);
-
-    command = (char *) malloc(sizeof(char) * strlen(args[0]) + 1);
-    strcpy(command, args[0]);
-    filename = (char *) malloc(sizeof(char) * strlen(args[2]) + 1);
-    strcpy(filename, args[2]);
-    if(strcmp(args[1], ">>") == 0) {
+    string cmd_line_copy(cmd_line);
+    int num_of_args;
+    char **args = init_args(this->cmd_line, &num_of_args);
+    string s = string(cmd_line);
+    string delimiter = s.find(">>") != std::string::npos ? ">>" : ">";
+    command = (char *) malloc(sizeof(char) * (strlen(args[0]) + 1));
+    strcpy(command, s.substr(0, s.find(delimiter)).c_str());
+    filename = (char *) malloc(sizeof(char) * (strlen(args[2]) + 1));
+    strcpy(filename, s.substr(s.find(delimiter), s.length()).c_str());
+    char double_arrow[] = ">>";
+    if(strcmp(args[1], double_arrow) == 0) {
         append = true;
     } else {
         append = false;
@@ -587,12 +668,12 @@ RedirectionCommand::RedirectionCommand(const char *cmd_line) : Command(cmd_line)
 
     free_args(args, num_of_args);
     free(args);
-    free(cmd_line_copy);
 }
 
 void RedirectionCommand::execute() {
     SmallShell &shell = SmallShell::getInstance();
     shell.executeCommand(command);
+    cleanup();
 }
 
 void RedirectionCommand::prepare() {
@@ -602,20 +683,50 @@ void RedirectionCommand::prepare() {
         fd = open(filename, O_WRONLY | O_APPEND | O_CREAT, 0666);
     else
         fd = open(filename, O_WRONLY | O_CREAT, 0666);
-
 }
 
 void RedirectionCommand::cleanup() {
-
     free(filename);
-    cout << "Freeee 3" << endl;
     free(command);
-    cout << "Freeee 4" << endl;
-//    close(fd);
-    cout << "Freeee 5" << endl;
+    close(fd);
     dup2(stdout_copy,1);
-    cout << "Freeee 6" << endl;
     close(stdout_copy);
+}
+
+PipeCommand::PipeCommand(const char *cmd_line): Command(cmd_line) {
+    string s = string(cmd_line);
+    string delimiter = "|";
+    string cmd1(s.substr(0, s.find(delimiter))),cmd2( s.substr(s.find(delimiter), s.length()));
+    SmallShell &shell = SmallShell::getInstance();
+    command1 = shell.CreateCommand(cmd1.c_str());
+    command2 = shell.CreateCommand(cmd2.c_str());
+}
+
+void PipeCommand::execute() {
+// TODO: Check number of arguments
+    int filedes[2];
+    pipe(filedes);
+    SmallShell &shell = SmallShell::getInstance();
+    pid_t pid1 = fork(), pid2;
+    if(pid1 == SYS_FAIL){
+        print_sys_error("open");
+        return;
+    }
+    if (pid1 == 0) { //first son
+        setpgrp();
+        if(delimiter == "|") {
+            dup2(filedes[1], 1);
+        } else{
+            dup2(filedes[1], 2);
+        }
+        close(filedes[0]);
+        close(filedes[1]);
+        shell.executeCommand(command1.c_str());
+        exit(0);
+    }
+    free_args(args, num_of_args);
+    free(cmd_line_copy);
+    free(args);
 }
 
 

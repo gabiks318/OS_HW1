@@ -84,7 +84,19 @@
 				</MakeCommands>
 			</Target>
 		</Build>
-		<Unit filename="/tmp/tmp.G2VUpIh0Xo/main.cpp">
+		<Unit filename="/tmp/tmp.G2VUpIh0Xo/Commands.cpp">
+			<Option target="os_hw1"/>
+		</Unit>
+		<Unit filename="/tmp/tmp.G2VUpIh0Xo/Commands.h">
+			<Option target="os_hw1"/>
+		</Unit>
+		<Unit filename="/tmp/tmp.G2VUpIh0Xo/signals.cpp">
+			<Option target="os_hw1"/>
+		</Unit>
+		<Unit filename="/tmp/tmp.G2VUpIh0Xo/signals.h">
+			<Option target="os_hw1"/>
+		</Unit>
+		<Unit filename="/tmp/tmp.G2VUpIh0Xo/smash.cpp">
 			<Option target="os_hw1"/>
 		</Unit>
 		<Unit filename="/tmp/tmp.G2VUpIh0Xo/CMakeLists.txt">

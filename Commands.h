@@ -11,7 +11,7 @@
 #define PROCESSES_MAX_NUM (100)
 #define PROCESS_NAME_MAX_LENGTH (50)
 #define COMMAND_ARGS_MAX_LENGTH (200)
-#define COMMAND_MAX_ARGS (20)
+#define COMMAND_MAX_ARGS 20
 
 class Command {
 protected:
@@ -63,9 +63,7 @@ class RedirectionCommand : public Command {
 public:
     explicit RedirectionCommand(const char *cmd_line);
 
-    virtual ~RedirectionCommand() {
-        cleanup();
-    }
+    virtual ~RedirectionCommand() {}
 
     void execute() override;
     void prepare();
