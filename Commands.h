@@ -220,7 +220,7 @@ public:
     char* last_directory;
     JobsList job_list;
     pid_t current_process;
-    Command* current_cmd;
+    std::string current_cmd;
 
     Command *CreateCommand(const char *cmd_line);
 

@@ -6,7 +6,7 @@
 #include <sstream>
 #include <sys/wait.h>
 #include <fcntl.h>
-#include <iomanip>
+#include <exception>
 #include "Commands.h"
 
 using namespace std;
@@ -48,7 +48,7 @@ int _parseCommandLine(const char *cmd_line, char **args) {
     std::istringstream iss(_trim(string(cmd_line)).c_str());
     for (std::string s; iss >> s;) {
         args[i] = (char *) malloc(s.length() + 1);
-        if(!args[i]){
+        if (!args[i]) {
             failed = true;
             break;
         }
@@ -56,8 +56,8 @@ int _parseCommandLine(const char *cmd_line, char **args) {
         strcpy(args[i], s.c_str());
         i++;
     }
-    if(failed){
-        for(int j = 0; j < i; j++)
+    if (failed) {
+        for (int j = 0; j < i; j++)
             free(args[j]);
         i = -1;
     }
@@ -67,21 +67,21 @@ int _parseCommandLine(const char *cmd_line, char **args) {
 }
 
 
-char** init_args(const char* cmd_line, int* num_of_args){
-    char **args = (char **) malloc(COMMAND_MAX_ARGS * sizeof(char**));
-    if(!args)
+char **init_args(const char *cmd_line, int *num_of_args) {
+    char **args = (char **) malloc(COMMAND_MAX_ARGS * sizeof(char **));
+    if (!args)
         return nullptr;
     for (int i = 0; i < COMMAND_MAX_ARGS; i++)
         args[i] = nullptr;
     int num = _parseCommandLine(cmd_line, args);
-    if(num == -1)
+    if (num == -1)
         args = nullptr;
     *num_of_args = num;
     return args;
 }
 
-void free_args(char** args, int arg_num){
-    if(!args)
+void free_args(char **args, int arg_num) {
+    if (!args)
         return;
 
     for (int i = 0; i < arg_num; i++) {
@@ -91,8 +91,14 @@ void free_args(char** args, int arg_num){
     free(args);
 }
 
-void print_sys_error(string sys_call){
-    cerr << "smash error " << sys_call << " failed";
+bool is_number(const std::string &s) {
+    std::string::const_iterator it = s.begin();
+    while (it != s.end() && std::isdigit(*it)) ++it;
+    return !s.empty() && it == s.end();
+}
+
+void print_sys_error(string sys_call) {
+    cerr << "smash error " << sys_call << " failed" << endl;
 }
 
 
@@ -130,7 +136,7 @@ BuiltInCommand::BuiltInCommand(const char *cmd_line) : Command(cmd_line) {}
 // TODO: Add your implementation for classes in Commands.h 
 
 SmallShell::SmallShell() : smash_prompt("smash"), pid(getpid()), last_directory(nullptr), job_list(),
-                           current_process(-1), current_cmd(nullptr) {
+                           current_process(-1), current_cmd() {
 
 }
 
@@ -158,7 +164,7 @@ Command *SmallShell::CreateCommand(const char *cmd_line) {
         return new RedirectionCommand(cmd_line);
     }
 
-    if(strstr(cmd_line, " | ") != NULL || strstr(cmd_line, " |& ")){
+    if (strstr(cmd_line, " | ") != NULL || strstr(cmd_line, " |& ")) {
         return new PipeCommand(cmd_line);
     }
 
@@ -180,7 +186,9 @@ Command *SmallShell::CreateCommand(const char *cmd_line) {
         return new BackgroundCommand(cmd_line, &job_list);
     } else if (firstWord.compare("quit") == 0) {
         return new QuitCommand(cmd_line, &job_list);
-    } else {
+    } else if((firstWord.compare("head") == 0)) {
+        return new HeadCommand(cmd_line);
+    } else  {
         return new ExternalCommand(cmd_line);
     }
 
@@ -189,14 +197,14 @@ Command *SmallShell::CreateCommand(const char *cmd_line) {
 
 void SmallShell::executeCommand(const char *cmd_line) {
 
-    if(string(cmd_line).find_first_not_of(" \n\r\t\f\v") == string::npos)
+    if (string(cmd_line).find_first_not_of(" \n\r\t\f\v") == string::npos)
         return;
     Command *cmd = CreateCommand(cmd_line);
     job_list.removeFinishedJobs();
     cmd->execute();
     delete cmd;
     current_process = -1;
-    current_cmd = nullptr;
+    current_cmd = "";
 }
 /////////////////////////////--------------Job List implementation-------//////////////////////////////
 
@@ -299,8 +307,8 @@ ChpromptCommand::ChpromptCommand(const char *cmd_line) : BuiltInCommand(cmd_line
 
 void ChpromptCommand::execute() {
     int num_of_args;
-    char** args = init_args(this->cmd_line, &num_of_args);
-    if(!args) {
+    char **args = init_args(this->cmd_line, &num_of_args);
+    if (!args) {
         string sys_call("malloc");
         print_sys_error(sys_call);
         return;
@@ -357,9 +365,8 @@ void ChangeDirCommand::execute() {
 
     int num_of_args;
     char **args = init_args(this->cmd_line, &num_of_args);
-    if(!args) {
-        string sys_call("malloc");
-        print_sys_error(sys_call);
+    if (!args) {
+        print_sys_error("malloc");
         return;
     }
     SmallShell &shell = SmallShell::getInstance();
@@ -371,13 +378,15 @@ void ChangeDirCommand::execute() {
     } else {
         long max_size = pathconf(".", _PC_PATH_MAX);
         char *buffer = (char *) malloc((size_t) max_size);
-        if(!buffer) {
+        if (!buffer) {
             print_sys_error("malloc");
+            free_args(args, num_of_args);
             return;
         }
-        if(getcwd(buffer, (size_t) max_size) == NULL){
+        if (getcwd(buffer, (size_t) max_size) == NULL) {
             print_sys_error("getcwd");
             free(buffer);
+            free_args(args, num_of_args);
             return;
         }
         string next_dir = args[1];
@@ -390,6 +399,7 @@ void ChangeDirCommand::execute() {
                 if (chdir(*plastPwd) == SYS_FAIL) {
                     print_sys_error("chdir");
                     free(buffer);
+                    free_args(args, num_of_args);
                     return;
                 } else {
                     if (*plastPwd)
@@ -398,8 +408,10 @@ void ChangeDirCommand::execute() {
                 }
             }
         } else {
-            if (chdir(args[1]) != 0) {
-                // TODO: Error handling
+            if (chdir(args[1]) == SYS_FAIL) {
+                print_sys_error("chdir");
+                free_args(args, num_of_args);
+                return;
             } else {
                 if (*plastPwd)
                     free(*plastPwd);
@@ -440,16 +452,45 @@ KillCommand::KillCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(
 void KillCommand::execute() {
     int num_of_args;
     char **args = init_args(this->cmd_line, &num_of_args);
+    if (!args) {
+        print_sys_error("malloc");
+        return;
+    }
     if (num_of_args != 3) {
         cerr << "smash error: kill: invalid arguments" << endl;
     } else {
-// TODO: Check arguments
-        int job_id = stoi(args[2]);
+        int job_id;
+        try {
+            // Check for a valid job-id
+            if (!is_number(args[2]))
+                throw exception();
+            job_id = stoi(args[2]);
+
+        } catch (exception &) {
+            cerr << "smash error: kill: invalid arguments" << endl;
+            free_args(args, num_of_args);
+            return;
+        }
         if (JobsList::JobEntry *job = jobs->getJobById(job_id)) {
             int job_pid = job->job_pid;
-            int signum = stoi(string(args[1]).erase(0, 1));
+            int signum;
+            try {
+                // Check for a valid signal number
+                if (!is_number(string(args[1]).erase(0, 1)))
+                    throw exception();
+                signum = stoi(string(args[1]).erase(0, 1));
+            } catch (exception &) {
+                cerr << "smash error: kill: invalid arguments" << endl;
+                free_args(args, num_of_args);
+                return;
+            }
+            if (kill(job_pid, signum) == SYS_FAIL) {
+                print_sys_error("kill");
+                free_args(args, num_of_args);
+                return;
+            }
             cout << "signal number " << signum << " was sent to pid " << job_pid << endl;
-            kill(job_pid, signum);
+
             if (signum == SIGTSTP) {
                 job->isStopped = true;
             } else if (signum == SIGCONT) {
@@ -461,7 +502,6 @@ void KillCommand::execute() {
     }
 
     free_args(args, num_of_args);
-    free(args);
 }
 
 /* FG Command
@@ -471,31 +511,50 @@ void KillCommand::execute() {
 ForegroundCommand::ForegroundCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line), jobs(jobs) {}
 
 void ForegroundCommand::execute() {
-    // TODO: add free
+    // TODO: Check what the process name should be if stopped(ctrl-z after using this command)
     int num_of_args;
     char **args = init_args(this->cmd_line, &num_of_args);
+    if (!args) {
+        print_sys_error("malloc");
+        return;
+    }
     SmallShell &smash = SmallShell::getInstance();
     if (num_of_args == 2) {
-        int job_id = stoi(args[1]);
-        if (job_id < 0) { //TODO: make sure this is correct
-            cerr << "smash error: fg: job-id " << job_id << " does not exist" << endl;
-        } else {
-            if (JobsList::JobEntry *job = jobs->getJobById(job_id)) {
-                int job_pid = job->job_pid;
-                if (job->isStopped) {
-                    kill(job_pid, SIGCONT);
-                }
-                int status_p;
-                cout << job->command << ":" << job_pid << endl;
-                smash.current_process = job_pid;
-                smash.current_cmd = this;
-                jobs->removeJobById(job_id);
-
-                waitpid(job_pid, &status_p, WUNTRACED);
-            } else {
-                cerr << "smash error: fg: job-id" << job_id << "does not exist" << endl;
-            }
+        int job_id;
+        try {
+            if (!is_number(args[1]))
+                throw exception();
+            job_id = stoi(args[1]);
+        } catch (exception &) {
+            cerr << "smash error: fg: invalid arguments" << endl;
+            free_args(args, num_of_args);
+            return;
         }
+        JobsList::JobEntry *job = jobs->getJobById(job_id);
+        if (job_id >= 0 && job) {
+            int job_pid = job->job_pid;
+            if (job->isStopped) {
+                if (kill(job_pid, SIGCONT) == SYS_FAIL) {
+                    print_sys_error("kill");
+                    free_args(args, num_of_args);
+                    return;
+                }
+            }
+            int status_p;
+            cout << job->command << ":" << job_pid << endl;
+            smash.current_process = job_pid;
+            smash.current_cmd = job->command;
+            jobs->removeJobById(job_id);
+
+            if (waitpid(job_pid, &status_p, WUNTRACED) == SYS_FAIL) {
+                print_sys_error("waitpid");
+                free_args(args, num_of_args);
+                return;
+            }
+        } else {
+            cerr << "smash error: fg: job-id" << job_id << "does not exist" << endl;
+        }
+
     } else if (num_of_args == 1) {
         int lastJobId;
         JobsList::JobEntry *max_job = jobs->getLastJob(&lastJobId);
@@ -503,19 +562,29 @@ void ForegroundCommand::execute() {
             cerr << "smash error: fg: jobs list is empty" << endl;
         } else {
             if (max_job->isStopped) {
-                kill(max_job->job_pid, SIGCONT);
+                if (kill(max_job->job_pid, SIGCONT) == SYS_FAIL) {
+                    print_sys_error("kill");
+                    free_args(args, num_of_args);
+                    return;
+                }
             }
 
             int status_p;
             jobs->removeJobById(lastJobId);
             cout << max_job->command << ":" << max_job->job_pid << endl;
             smash.current_process = max_job->job_pid;
-            smash.current_cmd = this;
-            waitpid(max_job->job_pid, &status_p, WUNTRACED);
+            smash.current_cmd = max_job->command;
+            if (waitpid(max_job->job_pid, &status_p, WUNTRACED) == SYS_FAIL) {
+                print_sys_error("waitpid");
+                free_args(args, num_of_args);
+                return;
+            }
         }
     } else {
         cerr << "smash error: fg: invalid arguments" << endl;
     }
+
+    free_args(args, num_of_args);
 }
 
 /* BG Command
@@ -525,65 +594,93 @@ void ForegroundCommand::execute() {
 BackgroundCommand::BackgroundCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line), jobs(jobs) {}
 
 void BackgroundCommand::execute() {
-    // TODO: add free
+
     int num_of_args;
     char **args = init_args(this->cmd_line, &num_of_args);
+    if (!args) {
+        print_sys_error("malloc");
+        return;
+    }
     if (num_of_args == 2) {
-        int job_id = stoi(args[1]);
-        if (job_id < 0) { //TODO: make sure this is correct
-            cerr << "smash error:bg:job-id " << job_id << " does not exist" << endl;
-        } else {
-            if (JobsList::JobEntry *job = jobs->getJobById(job_id)) {
-                int job_pid = job->job_pid;
-                if (!job->isStopped) {
-                    cerr << "smash error:bg:job-id " << job_id << " is already running in the background" << endl;
-                } else {
-                    kill(job_pid, SIGCONT);
-                    job->isStopped = false;
-                    cout << job->command << ":" << job_pid << endl;
-                }
-
+        int job_id;
+        try {
+            if (!is_number(args[1]))
+                throw exception();
+            job_id = stoi(args[1]);
+        } catch (exception &) {
+            cerr << "smash error: bg: invalid arguments" << endl;
+            free_args(args, num_of_args);
+            return;
+        }
+        JobsList::JobEntry *job = jobs->getJobById(job_id);
+        if (job_id >= 0 && job) {
+            int job_pid = job->job_pid;
+            if (!job->isStopped) {
+                cerr << "smash error: bg:job-id " << job_id << " is already running in the background" << endl;
             } else {
-                cerr << "smash error:bg:job-id " << job_id << " does not exist" << endl;
+                if (kill(job_pid, SIGCONT) == SYS_FAIL) {
+                    print_sys_error("kill");
+                    free_args(args, num_of_args);
+                    return;
+                }
+                job->isStopped = false;
+                cout << job->command << ":" << job_pid << endl;
             }
+        } else {
+            cerr << "smash error:bg:job-id " << job_id << " does not exist" << endl;
         }
     } else if (num_of_args == 1) {
         int lastJobId;
         JobsList::JobEntry *max_job = jobs->getLastStoppedJob(&lastJobId);
         if (lastJobId == -1) {
-            cerr << "smash error: bg:  there is no stopped jobs to resume" << endl;
+            cerr << "smash error: bg: there is no stopped jobs to resume" << endl;
         } else {
-            kill(max_job->job_pid, SIGCONT);
+            if (kill(max_job->job_pid, SIGCONT) == SYS_FAIL) {
+                print_sys_error("kill");
+                free_args(args, num_of_args);
+                return;
+            }
             max_job->isStopped = false;
             cout << max_job->command << ":" << max_job->job_pid << endl;
         }
     } else {
         cerr << "smash error: bg: invalid arguments" << endl;
     }
+
+    free_args(args, num_of_args);
 }
 
-HeadCommand::HeadCommand(const char *cmd_line): BuiltInCommand(cmd_line) {}
+HeadCommand::HeadCommand(const char *cmd_line) : BuiltInCommand(cmd_line) {}
+
 void HeadCommand::execute() {
-// TODO: check for valid args
+// TODO: what to do if more than 3 arguments?
     int line_num = 10;
     string line;
     char *filename;
     int num_of_args;
     char **args = init_args(this->cmd_line, &num_of_args);
 
-    if(num_of_args == 3 || num_of_args == 2){
-        if(num_of_args == 3){
-            line_num = stoi(string(args[1]).erase(0, 1));
+    if (num_of_args == 3 || num_of_args == 2) {
+        if (num_of_args == 3) {
+            try{
+                if (!is_number(string(args[1]).erase(0, 1)))
+                    throw exception();
+                line_num = stoi(string(args[1]).erase(0, 1));
+            }  catch (exception &) {
+                cerr << "smash error: head: invalid arguments" << endl;
+                free_args(args, num_of_args);
+                return;
+        }
             filename = args[2];
         } else {
             filename = args[1];
         }
         std::ifstream file(filename);
-        for(int i = 0; i < line_num && getline(file, line) ; i++){
-            cout << line;
+        for (int i = 0; i < line_num && getline(file, line); i++) {
+            cout << line << endl;
         }
-    }  else {
-        if(num_of_args == 1){
+    } else {
+        if (num_of_args == 1) {
             cerr << "smash error: head: not enough arguments" << endl;
         }
     }
@@ -637,7 +734,7 @@ void ExternalCommand::execute() {
             smash.job_list.addJob(this, pid, false);
         } else {
             smash.current_process = pid;
-            smash.current_cmd = this;
+            smash.current_cmd = cmd_line;
             int status;
             waitpid(pid, &status, WUNTRACED);
         }
@@ -679,7 +776,7 @@ void RedirectionCommand::execute() {
 void RedirectionCommand::prepare() {
     stdout_copy = dup(1);
     close(1);
-    if(append)
+    if (append)
         fd = open(filename, O_WRONLY | O_APPEND | O_CREAT, 0666);
     else
         fd = open(filename, O_WRONLY | O_CREAT, 0666);
@@ -689,11 +786,13 @@ void RedirectionCommand::cleanup() {
     free(filename);
     free(command);
     close(fd);
-    dup2(stdout_copy,1);
+    if (dup2(stdout_copy, 1) == SYS_FAIL) {
+        print_sys_error("dup2");
+    }
     close(stdout_copy);
 }
 
-PipeCommand::PipeCommand(const char *cmd_line): Command(cmd_line) {
+PipeCommand::PipeCommand(const char *cmd_line) : Command(cmd_line) {
     string s = string(cmd_line);
     string delimiter = "|";
     string cmd1(s.substr(0, s.find(delimiter))),cmd2( s.substr(s.find(delimiter), s.length()));
