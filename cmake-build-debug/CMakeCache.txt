@@ -195,12 +195,6 @@ ProcessorCount_cmd_getconf:FILEPATH=/usr/bin/getconf
 ProcessorCount_cmd_sysctl:FILEPATH=/sbin/sysctl
 
 //Value Computed by CMake
-Project_BINARY_DIR:STATIC=/tmp/tmp.G2VUpIh0Xo/cmake-build-debug
-
-//Value Computed by CMake
-Project_SOURCE_DIR:STATIC=/tmp/tmp.G2VUpIh0Xo
-
-//Value Computed by CMake
 example_BINARY_DIR:STATIC=/tmp/tmp.G2VUpIh0Xo/cmake-build-debug
 
 //Value Computed by CMake

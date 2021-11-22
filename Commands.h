@@ -119,6 +119,25 @@ public:
     void execute() override;
 };
 
+class AlarmList{
+public:
+    class AlarmEntry{
+    public:
+        std::string command;
+        time_t time_created;
+        time_t duration;
+        time_t time_limit;
+        pid_t pid;
+        AlarmEntry(std::string command, time_t time_created, time_t duration, pid_t pid);
+        ~AlarmEntry()= default;
+    };
+
+    std::vector<AlarmEntry> alarms;
+
+    AlarmList();
+    void add_alarm(std::string command, time_t duration, pid_t pid);
+    void delete_alarms();
+};
 
 class JobsList {
 public:
@@ -208,6 +227,15 @@ public:
     void execute() override;
 };
 
+class TimeoutCommand: public Command{
+public:
+    TimeoutCommand(const char* cmd_line);
+
+    virtual ~TimeoutCommand(){}
+
+    void execute() override;
+};
+
 
 class SmallShell {
 private:
@@ -235,7 +263,7 @@ public:
 
     ~SmallShell();
 
-    void executeCommand(const char *cmd_line);
+    void executeCommand(const char *cmd_line, bool alarm=false);
     void setLastDirectory(char *dir);
 };
 

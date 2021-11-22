@@ -3,10 +3,13 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <unistd.h>
 #include <sstream>
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <exception>
+#include <chrono>
+#include <thread>
 #include "Commands.h"
 
 using namespace std;
@@ -186,24 +189,32 @@ Command *SmallShell::CreateCommand(const char *cmd_line) {
         return new BackgroundCommand(cmd_line, &job_list);
     } else if (firstWord.compare("quit") == 0) {
         return new QuitCommand(cmd_line, &job_list);
-    } else if((firstWord.compare("head") == 0)) {
+    } else if ((firstWord.compare("head") == 0)) {
         return new HeadCommand(cmd_line);
-    } else  {
+    } else if (firstWord.compare("timeout") == 0){
+        return new TimeoutCommand(cmd_line);
+    } else{
         return new ExternalCommand(cmd_line);
     }
 
     return nullptr;
 }
 
-void SmallShell::executeCommand(const char *cmd_line) {
+void SmallShell::executeCommand(const char *cmd_line, bool alarm) {
 
     if (string(cmd_line).find_first_not_of(" \n\r\t\f\v") == string::npos)
         return;
     Command *cmd = CreateCommand(cmd_line);
     job_list.removeFinishedJobs();
     cmd->execute();
+    if (alarm) {
+        int current_pid = alarm_pid > -1 ? alarm_pid : current_process;
+        alarm_list.add_alarm(cmd->get_cmd_line(), current_duration, current_pid);
+    }
     delete cmd;
     current_process = -1;
+    alarm_pid = -1;
+    current_duration = 0;
     current_cmd = "";
 }
 /////////////////////////////--------------Job List implementation-------//////////////////////////////
@@ -662,15 +673,15 @@ void HeadCommand::execute() {
 
     if (num_of_args == 3 || num_of_args == 2) {
         if (num_of_args == 3) {
-            try{
+            try {
                 if (!is_number(string(args[1]).erase(0, 1)))
                     throw exception();
                 line_num = stoi(string(args[1]).erase(0, 1));
-            }  catch (exception &) {
+            } catch (exception &) {
                 cerr << "smash error: head: invalid arguments" << endl;
                 free_args(args, num_of_args);
                 return;
-        }
+            }
             filename = args[2];
         } else {
             filename = args[1];
@@ -696,7 +707,7 @@ QuitCommand::QuitCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(
 void QuitCommand::execute() {
     int num_of_args;
     char **args = init_args(this->cmd_line, &num_of_args);
-    if (num_of_args == 2 && string(args[1]).compare("kill") == 0) {
+    if (num_of_args >= 2 && string(args[1]).compare("kill") == 0) {
         cout << "smash: sending SIGKILL signal to " << jobs->job_list.size() << " jobs:" << endl;
         jobs->killAllJobs();
     }
@@ -732,6 +743,7 @@ void ExternalCommand::execute() {
 
         if (is_background) {
             smash.job_list.addJob(this, pid, false);
+            smash.alarm_pid = pid;
         } else {
             smash.current_process = pid;
             smash.current_cmd = cmd_line;
@@ -741,6 +753,7 @@ void ExternalCommand::execute() {
     }
     free(cmd_line_copy);
 }
+
 
 /////////////////////////////--------------I/O,Pipe,Head,Alarm implementation-------//////////////////////////////
 
@@ -826,6 +839,56 @@ void PipeCommand::execute() {
     free_args(args, num_of_args);
     free(cmd_line_copy);
     free(args);
+}
+
+AlarmList::AlarmList(): alarms() {}
+
+void AlarmList::add_alarm(std::string command, time_t duration, pid_t pid) {
+    alarms.push_back(AlarmEntry(command, time(NULL), duration, pid));
+}
+
+void AlarmList::delete_alarms() {
+    for (auto it = alarms.begin(); it != alarms.end(); ++it) {
+        auto alarm_entry = *it;
+        if(alarm_entry.time_created >= alarm_entry.time_limit){
+            cout << "smash: timeout " << alarm_entry.duration << " " << alarm_entry.command << " timed out!" << endl;
+            kill(alarm_entry.pid, SIGKILL);
+        }
+    }
+}
+
+AlarmList::AlarmEntry::AlarmEntry(std::string command, time_t time_created, time_t duration, pid_t pid) :
+        command(command), time_created(time_created), duration(duration), pid(pid)  {
+    time_limit = time(NULL) + duration;
+}
+
+
+TimeoutCommand::TimeoutCommand(const char *cmd_line) : Command(cmd_line) {}
+
+void TimeoutCommand::execute() {
+    int num_of_args;
+    char **args = init_args(cmd_line, &num_of_args);
+    if (!args) {
+        print_sys_error("malloc");
+        return;
+    }
+    SmallShell &shell = SmallShell::getInstance();
+    int delay = stoi(args[1]);
+    if (fork() == 0) {
+        setpgrp();
+
+        usleep(delay * 1000000);
+        kill(shell.pid, SIGALRM);
+        exit(0);
+    }
+    string new_cmd_line;
+    for(int i = 2; i < num_of_args; i++){
+        new_cmd_line.append(string(args[i]));
+        new_cmd_line.append(" ");
+    }
+    shell.current_duration = delay;
+    shell.executeCommand(new_cmd_line.c_str(), true);
+    free_args(args, num_of_args);
 }
 
 
