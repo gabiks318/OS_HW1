@@ -25,6 +25,7 @@ const std::string WHITESPACE = " \n\r\t\f\v";
 #else
 #define FUNC_ENTRY()
 #define FUNC_EXIT()
+#define SYS_FAIL -1
 #endif
 
 
@@ -50,13 +51,14 @@ int _parseCommandLine(const char *cmd_line, char **args) {
     bool failed = false;
     std::istringstream iss(_trim(string(cmd_line)).c_str());
     for (std::string s; iss >> s;) {
-        args[i] = (char *) malloc(s.length() + 1);
+        args[i] = (char *) malloc(_trim(s).length() + 1);
         if (!args[i]) {
             failed = true;
             break;
         }
-        memset(args[i], 0, s.length() + 1);
-        strcpy(args[i], s.c_str());
+        memset(args[i], 0, _trim(s).length() + 1);
+        strcpy(args[i],
+               _trim(s).c_str());
         i++;
     }
     if (failed) {
@@ -134,12 +136,8 @@ Command::Command(const char *cmd_line) : cmd_line(cmd_line) {}
 BuiltInCommand::BuiltInCommand(const char *cmd_line) : Command(cmd_line) {}
 
 
-
-
-// TODO: Add your implementation for classes in Commands.h 
-
-SmallShell::SmallShell() : smash_prompt("smash"), pid(getpid()), last_directory(nullptr), job_list(),
-                           current_process(-1), current_cmd() {
+SmallShell::SmallShell() : smash_prompt("smash"), pid(getpid()), last_directory(nullptr), job_list(), alarm_list(),
+                           current_process(-1), current_cmd() ,alarm_pid(-1), current_duration(0) {
 
 }
 
@@ -157,13 +155,12 @@ void SmallShell::setLastDirectory(char *dir) {
 * Creates and returns a pointer to Command class which matches the given command line (cmd_line)
 */
 Command *SmallShell::CreateCommand(const char *cmd_line) {
-    // TODO: Error check for valid command
-    // TODO: If background command, create job id and add to job list
+
 
     string cmd_s = _trim(string(cmd_line)); //REMOVE WHITESPACES
     string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
 
-    if (strstr(cmd_line, " > ") != NULL || strstr(cmd_line, " >> ") != NULL) {
+    if (strstr(cmd_line, ">") != NULL || strstr(cmd_line, ">>") != NULL) {
         return new RedirectionCommand(cmd_line);
     }
 
@@ -204,8 +201,8 @@ void SmallShell::executeCommand(const char *cmd_line, bool alarm) {
 
     if (string(cmd_line).find_first_not_of(" \n\r\t\f\v") == string::npos)
         return;
-    Command *cmd = CreateCommand(cmd_line);
     job_list.removeFinishedJobs();
+    Command *cmd = CreateCommand(cmd_line);
     cmd->execute();
     if (alarm) {
         int current_pid = alarm_pid > -1 ? alarm_pid : current_process;
@@ -217,12 +214,15 @@ void SmallShell::executeCommand(const char *cmd_line, bool alarm) {
     current_duration = 0;
     current_cmd = "";
 }
+
 /////////////////////////////--------------Job List implementation-------//////////////////////////////
 
-JobsList::JobEntry::JobEntry(int job_id, pid_t job_pid, time_t time_created, std::string command, bool isStopped)
-        : job_id(job_id), job_pid(job_pid), time_created(time_created),
-          command(command),
-          isStopped(isStopped) {}
+JobsList::JobEntry::JobEntry(int job_id, pid_t job_pid, time_t time_created, std::string& command, bool isStopped)
+        : job_id(job_id),
+        job_pid(job_pid),
+        time_created(time_created),
+        command(command),
+        isStopped(isStopped) {}
 
 JobsList::JobsList() : job_list(), max_job_id(0) {
 }
@@ -238,7 +238,8 @@ void JobsList::removeFinishedJobs() {
     for (auto it = job_list.begin(); it != job_list.end(); ++it) {
         auto job = *it;
         int status;
-        if (waitpid(job.job_pid, &status, WNOHANG) == job.job_pid) {
+        int ret_wait = waitpid(job.job_pid, &status, WNOHANG);
+        if (ret_wait == job.job_pid) {
             job_list.erase(it);
             --it;
         }
@@ -274,8 +275,15 @@ void JobsList::killAllJobs() {
 }
 
 JobsList::JobEntry *JobsList::getLastJob(int *lastJobId) {
-    *lastJobId = max_job_id;
-    return &job_list[job_list.size() - 1];
+    int max_job_found = -1;
+    for (auto it = job_list.begin(); it != job_list.end(); ++it) {
+        auto job = *it;
+        if(job.job_id > max_job_found){
+            max_job_found = job.job_id;
+        }
+    }
+    *lastJobId = max_job_found;
+    return getJobById(max_job_found);
 }
 
 JobsList::JobEntry *JobsList::getLastStoppedJob(int *jobId) {
@@ -302,7 +310,8 @@ void JobsList::removeJobById(int jobId) {
 
 void JobsList::addJob(Command *cmd, pid_t pid, bool isStopped) {
     removeFinishedJobs();
-    job_list.push_back(JobEntry(max_job_id, pid, time(nullptr), cmd->get_cmd_line(),
+    string cmd_line(cmd->get_cmd_line());
+    job_list.push_back(JobEntry(max_job_id, pid, time(nullptr), cmd_line,
                                 isStopped));
     max_job_id++;
 }
@@ -475,6 +484,10 @@ void KillCommand::execute() {
             // Check for a valid job-id
             if (!is_number(args[2]))
                 throw exception();
+            char first_char = string(args[1]).at(0);
+            char minus = '-';
+            if(first_char != minus)
+                throw exception();
             job_id = stoi(args[2]);
 
         } catch (exception &) {
@@ -558,18 +571,19 @@ void ForegroundCommand::execute() {
             jobs->removeJobById(job_id);
 
             if (waitpid(job_pid, &status_p, WUNTRACED) == SYS_FAIL) {
+
                 print_sys_error("waitpid");
                 free_args(args, num_of_args);
                 return;
             }
         } else {
-            cerr << "smash error: fg: job-id" << job_id << "does not exist" << endl;
+            cerr << "smash error: fg: job-id " << job_id << " does not exist" << endl;
         }
 
     } else if (num_of_args == 1) {
         int lastJobId;
         JobsList::JobEntry *max_job = jobs->getLastJob(&lastJobId);
-        if (lastJobId == 0) {
+        if (!max_job) {
             cerr << "smash error: fg: jobs list is empty" << endl;
         } else {
             if (max_job->isStopped) {
@@ -686,6 +700,13 @@ void HeadCommand::execute() {
         } else {
             filename = args[1];
         }
+        int fd = open(filename, O_RDWR);
+        if (fd == SYS_FAIL) {
+            free_args(args, num_of_args);
+            print_sys_error("open");
+            return;
+        }
+        close(fd);
         std::ifstream file(filename);
         for (int i = 0; i < line_num && getline(file, line); i++) {
             cout << line << endl;
@@ -695,7 +716,7 @@ void HeadCommand::execute() {
             cerr << "smash error: head: not enough arguments" << endl;
         }
     }
-
+    free_args(args, num_of_args);
 }
 
 /* Quit Command
@@ -717,43 +738,55 @@ void QuitCommand::execute() {
     exit(0);
 }
 
-//////////////////////////////-------------External Commands-------------//////////////////////////////
+/////////////////////////////--------------External Commands-------//////////////////////////////
 
 ExternalCommand::ExternalCommand(const char *cmd_line) : Command(cmd_line) {}
 
 void ExternalCommand::execute() {
-    char *cmd_line_copy = (char *) malloc(sizeof(char) * (strlen(cmd_line) + 1));
-    strcpy(cmd_line_copy, cmd_line);
-    bool is_background = _isBackgroundCommand(cmd_line);
-    if (is_background) {
-        _removeBackgroundSign(cmd_line_copy);
-    }
-    SmallShell &smash = SmallShell::getInstance();
-    char bash[] = "/bin/bash";
-    char flag[] = "-c";
-    char *args[] = {bash, flag, cmd_line_copy, nullptr};
+    string trimmed_command = _trim(string(cmd_line));
+    char cmd_line_copy[COMMAND_ARGS_MAX_LENGTH];
+    strcpy(cmd_line_copy, trimmed_command.c_str());
 
+    bool is_background = _isBackgroundCommand(cmd_line);
+    if(is_background)
+        _removeBackgroundSign(cmd_line_copy);
+
+    char executable[] = "/bin/bash";
+    char executable_name[] = "bash";
+    char flag[] = "-c";
+
+
+    char* fork_args[] = {executable_name,  flag, cmd_line_copy, nullptr};
 
     pid_t pid = fork();
     if (pid == 0) { //son
-        setpgrp();
-        execv(args[0], args);
-        // TODO: error handling?
-    } else { //father
-
-        if (is_background) {
+        if (setpgrp() == SYS_FAIL) {
+            print_sys_error("setpgrp");
+            return;
+        }
+        if (execv(executable, fork_args) == SYS_FAIL) {
+            print_sys_error("execv");
+            return;
+        }
+    } else {
+        SmallShell& smash = SmallShell::getInstance();
+        if(is_background){
             smash.job_list.addJob(this, pid, false);
             smash.alarm_pid = pid;
         } else {
             smash.current_process = pid;
             smash.current_cmd = cmd_line;
             int status;
-            waitpid(pid, &status, WUNTRACED);
+
+            if (waitpid(pid, &status, WUNTRACED) == SYS_FAIL) {
+                cout << "meir" << endl;
+                print_sys_error("waitpid");
+                return;
+            }
         }
     }
-    free(cmd_line_copy);
-}
 
+}
 
 /////////////////////////////--------------I/O,Pipe,Head,Alarm implementation-------//////////////////////////////
 
@@ -764,12 +797,17 @@ RedirectionCommand::RedirectionCommand(const char *cmd_line) : Command(cmd_line)
     char **args = init_args(this->cmd_line, &num_of_args);
     string s = string(cmd_line);
     string delimiter = s.find(">>") != std::string::npos ? ">>" : ">";
-    command = (char *) malloc(sizeof(char) * (strlen(args[0]) + 1));
-    strcpy(command, s.substr(0, s.find(delimiter)).c_str());
-    filename = (char *) malloc(sizeof(char) * (strlen(args[2]) + 1));
-    strcpy(filename, s.substr(s.find(delimiter), s.length()).c_str());
+
+    string trimmed_command = _trim(s.substr(0, s.find(delimiter)));
+    command = (char *) malloc(sizeof(char) * (strlen(trimmed_command.c_str()) + 1));
+    strcpy(command, trimmed_command.c_str());
+
+    string trimmed_filename = _trim(s.substr(s.find(delimiter) + delimiter.length(), s.length()));
+    filename = (char *) malloc(sizeof(char) * (strlen(trimmed_filename.c_str()) + 1));
+    strcpy(filename, trimmed_filename.c_str());
+
     char double_arrow[] = ">>";
-    if(strcmp(args[1], double_arrow) == 0) {
+    if (strcmp(delimiter.c_str(), double_arrow) == 0) {
         append = true;
     } else {
         append = false;
@@ -777,7 +815,6 @@ RedirectionCommand::RedirectionCommand(const char *cmd_line) : Command(cmd_line)
     prepare();
 
     free_args(args, num_of_args);
-    free(args);
 }
 
 void RedirectionCommand::execute() {
@@ -807,11 +844,9 @@ void RedirectionCommand::cleanup() {
 
 PipeCommand::PipeCommand(const char *cmd_line) : Command(cmd_line) {
     string s = string(cmd_line);
-    string delimiter = "|";
-    string cmd1(s.substr(0, s.find(delimiter))),cmd2( s.substr(s.find(delimiter), s.length()));
-    SmallShell &shell = SmallShell::getInstance();
-    command1 = shell.CreateCommand(cmd1.c_str());
-    command2 = shell.CreateCommand(cmd2.c_str());
+    delimiter = s.find("|&") == std::string::npos ? "|" : "|&";
+    command1 = s.substr(0, s.find(delimiter));
+    command2 = s.substr(s.find(delimiter) + 1, s.length());
 }
 
 void PipeCommand::execute() {
@@ -820,25 +855,75 @@ void PipeCommand::execute() {
     pipe(filedes);
     SmallShell &shell = SmallShell::getInstance();
     pid_t pid1 = fork(), pid2;
-    if(pid1 == SYS_FAIL){
-        print_sys_error("open");
+    int fail_check;
+    if (pid1 == SYS_FAIL) {
+        print_sys_error("fork");
+        close(filedes[0]);
+        close(filedes[1]);
         return;
     }
     if (pid1 == 0) { //first son
-        setpgrp();
-        if(delimiter == "|") {
-            dup2(filedes[1], 1);
-        } else{
-            dup2(filedes[1], 2);
+        if (setpgrp() == SYS_FAIL) {
+            print_sys_error("setpgrp");
+            close(filedes[0]);
+            close(filedes[1]);
+            return;
+        }
+        if (delimiter == "|") {
+            if (dup2(filedes[1], 1) == SYS_FAIL) {
+                print_sys_error("dup2");
+                close(filedes[0]);
+                close(filedes[1]);
+                return;
+            }
+        } else {
+            if (dup2(filedes[1], 2) == SYS_FAIL) {
+                print_sys_error("dup2");
+                close(filedes[0]);
+                close(filedes[1]);
+                return;
+            }
         }
         close(filedes[0]);
         close(filedes[1]);
         shell.executeCommand(command1.c_str());
         exit(0);
     }
-    free_args(args, num_of_args);
-    free(cmd_line_copy);
-    free(args);
+    pid2 = fork();
+    if (pid2 == SYS_FAIL) {
+        print_sys_error("fork");
+        close(filedes[0]);
+        close(filedes[1]);
+        return;
+    }
+    if (pid2 == 0) { //second son
+        if (setpgrp() == SYS_FAIL) {
+            print_sys_error("setpgrp");
+            close(filedes[0]);
+            close(filedes[1]);
+            return;
+        }
+        if (dup2(filedes[0], 0) == SYS_FAIL) {
+            print_sys_error("dup2");
+            close(filedes[0]);
+            close(filedes[1]);
+            return;
+        }
+        close(filedes[0]);
+        close(filedes[1]);
+        shell.executeCommand(command2.c_str());
+        exit(0);
+    }
+    close(filedes[0]);
+    close(filedes[1]);
+    if (wait(NULL) == SYS_FAIL) {
+        print_sys_error("wait");
+        return;
+    }
+    if (wait(NULL) == SYS_FAIL) {
+        print_sys_error("wait");
+        return;
+    }
 }
 
 AlarmList::AlarmList(): alarms() {}
@@ -852,7 +937,7 @@ void AlarmList::delete_alarms() {
         auto alarm_entry = *it;
         if(alarm_entry.time_created >= alarm_entry.time_limit){
             cout << "smash: timeout " << alarm_entry.duration << " " << alarm_entry.command << " timed out!" << endl;
-            kill(alarm_entry.pid, SIGKILL);
+            kill(alarm_entry.pid, SIGINT);
         }
     }
 }

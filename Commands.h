@@ -45,7 +45,9 @@ public:
 };
 
 class PipeCommand : public Command {
-    // TODO: Add your data members
+    std::string command1;
+    std::string command2;
+    std::string delimiter;
 public:
     PipeCommand(const char *cmd_line);
 
@@ -149,7 +151,7 @@ public:
         std::string command;
         bool isStopped;
 
-        JobEntry(int job_id, pid_t job_pid, time_t time_created, std::string command, bool isStopped);
+        JobEntry(int job_id, pid_t job_pid, time_t time_created, std::string& command, bool isStopped);
     };
 
     std::vector<JobEntry> job_list;
@@ -247,8 +249,13 @@ public:
     pid_t pid;
     char* last_directory;
     JobsList job_list;
+
     pid_t current_process;
     std::string current_cmd;
+
+    AlarmList alarm_list;
+    pid_t alarm_pid;
+    time_t current_duration;
 
     Command *CreateCommand(const char *cmd_line);
 
