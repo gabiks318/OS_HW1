@@ -6,11 +6,16 @@
 using namespace std;
 
 void ctrlZHandler(int sig_num) {
-    cout << "smash got ctrl-Z" << endl;
+    cout << "smash: got ctrl-Z" << endl;
     SmallShell& smash = SmallShell::getInstance();
     if(smash.current_process != -1) {
+        bool temp = smash.last_cmd_fg;
         Command* command = smash.CreateCommand(smash.current_cmd.c_str());
-        smash.job_list.addJob(command, smash.current_process, true);
+        if(temp) { // if last command was fg so insert with already given job id
+            smash.job_list.addJob(command, smash.current_process, true, true);
+        } else {
+            smash.job_list.addJob(command, smash.current_process, false , true);
+        }
         kill(smash.current_process, SIGSTOP);
         cout << "smash: process " << smash.current_process << " was stopped" << endl;
         smash.current_process = -1;
@@ -20,7 +25,7 @@ void ctrlZHandler(int sig_num) {
 }
 
 void ctrlCHandler(int sig_num) {
-    cout << "smash got ctrl-C" << endl;
+    cout << "smash: got ctrl-C" << endl;
     SmallShell& smash = SmallShell::getInstance();
     if(smash.current_process != -1) {
         int process_num = smash.current_process;

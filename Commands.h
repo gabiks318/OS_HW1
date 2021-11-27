@@ -8,8 +8,6 @@
 #include <sys/wait.h>
 
 
-#define PROCESSES_MAX_NUM (100)
-#define PROCESS_NAME_MAX_LENGTH (50)
 #define COMMAND_ARGS_MAX_LENGTH (200)
 #define COMMAND_MAX_ARGS 20
 
@@ -161,9 +159,7 @@ public:
 
     ~JobsList();
 
-    void addJob(Command *cmd, pid_t pid ,bool isStopped = false);
-
-    void printJobsList();
+    void addJob(Command *cmd, pid_t pid, bool last_cmd_fg = false ,bool isStopped = false);
 
     void killAllJobs();
 
@@ -176,7 +172,6 @@ public:
     JobEntry *getLastJob(int *lastJobId);
 
     JobEntry *getLastStoppedJob(int *jobId);
-    // TODO: Add extra methods or modify exisitng ones as needed
 };
 
 class JobsCommand : public BuiltInCommand {
@@ -251,6 +246,8 @@ public:
     JobsList job_list;
 
     pid_t current_process;
+    int job_id_fg;
+    bool last_cmd_fg;
     std::string current_cmd;
 
     AlarmList alarm_list;
