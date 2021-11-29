@@ -30,12 +30,15 @@ class BuiltInCommand : public Command {
 public:
     BuiltInCommand(const char *cmd_line);
 
-    virtual ~BuiltInCommand() {}
+    virtual ~BuiltInCommand() {
+        delete this->cmd_line;
+    }
 };
 
 class ExternalCommand : public Command {
+    bool is_alarm;
 public:
-    ExternalCommand(const char *cmd_line);
+    ExternalCommand(const char *cmd_line, bool is_alarm);
 
     virtual ~ExternalCommand() {}
 
@@ -60,6 +63,7 @@ class RedirectionCommand : public Command {
     bool append;
     int stdout_copy;
     int fd;
+    bool redirect_success;
 public:
     explicit RedirectionCommand(const char *cmd_line);
 
@@ -251,10 +255,11 @@ public:
     std::string current_cmd;
 
     AlarmList alarm_list;
+    bool foreground_alarm;
     pid_t alarm_pid;
     time_t current_duration;
 
-    Command *CreateCommand(const char *cmd_line);
+    Command *CreateCommand(const char *cmd_line, bool is_alarm);
 
     SmallShell(SmallShell const &) = delete; // disable copy ctor
     void operator=(SmallShell const &) = delete; // disable = operator

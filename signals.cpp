@@ -10,7 +10,7 @@ void ctrlZHandler(int sig_num) {
     SmallShell& smash = SmallShell::getInstance();
     if(smash.current_process != -1) {
         bool temp = smash.last_cmd_fg;
-        Command* command = smash.CreateCommand(smash.current_cmd.c_str());
+        Command* command = smash.CreateCommand(smash.current_cmd.c_str(), false);
         if(temp) { // if last command was fg so insert with already given job id
             smash.job_list.addJob(command, smash.current_process, true, true);
         } else {
