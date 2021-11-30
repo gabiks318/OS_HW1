@@ -21,9 +21,6 @@ public:
 
     virtual void execute() = 0;
     const char* get_cmd_line(){return cmd_line;}
-//    virtual void prepare();
-//    virtual void cleanup();
-    // TODO: Add your extra methods if needed
 };
 
 class BuiltInCommand : public Command {
@@ -115,8 +112,8 @@ class JobsList;
 
 class QuitCommand : public BuiltInCommand {
 public:
-    JobsList *jobs;
-    QuitCommand(const char *cmd_line, JobsList *jobs);
+
+    QuitCommand(const char *cmd_line);
 
     virtual ~QuitCommand() {}
 
@@ -179,9 +176,9 @@ public:
 };
 
 class JobsCommand : public BuiltInCommand {
-    JobsList *jobs;
+
 public:
-    JobsCommand(const char *cmd_line, JobsList *jobs);
+    JobsCommand(const char *cmd_line);
 
     virtual ~JobsCommand() {}
 
@@ -189,9 +186,9 @@ public:
 };
 
 class KillCommand : public BuiltInCommand {
-    JobsList *jobs;
+
 public:
-    KillCommand(const char *cmd_line, JobsList *jobs);
+    KillCommand(const char *cmd_line);
 
     virtual ~KillCommand() {}
 
@@ -199,9 +196,9 @@ public:
 };
 
 class ForegroundCommand : public BuiltInCommand {
-    JobsList *jobs;
+
 public:
-    ForegroundCommand(const char *cmd_line, JobsList *jobs);
+    ForegroundCommand(const char *cmd_line);
 
     virtual ~ForegroundCommand() {}
 
@@ -210,9 +207,9 @@ public:
 
 
 class BackgroundCommand : public BuiltInCommand {
-    JobsList *jobs;
+
 public:
-    BackgroundCommand(const char *cmd_line, JobsList *jobs);
+    BackgroundCommand(const char *cmd_line);
 
     virtual ~BackgroundCommand(){}
 
@@ -244,11 +241,11 @@ private:
     SmallShell();
 
 public:
-    std::string smash_prompt;
-    pid_t pid;
+    static std::string smash_prompt;
+    static pid_t pid;
     char* last_directory;
-    JobsList job_list;
-
+    static JobsList job_list;
+    bool is_pipe;
     pid_t current_process;
     int job_id_fg;
     bool last_cmd_fg;
