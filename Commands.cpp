@@ -1,15 +1,11 @@
 #include <unistd.h>
 #include <string.h>
-#include <fstream>
 #include <iostream>
-#include <vector>
-#include <unistd.h>
 #include <sstream>
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <exception>
 #include <chrono>
-#include <thread>
 #include "Commands.h"
 
 using namespace std;
@@ -182,7 +178,7 @@ Command *SmallShell::CreateCommand(const char *cmd_line, bool is_alarm) {
         return new RedirectionCommand(cmd_line);
     }
 
-    if (strstr(cmd_line, " | ") != NULL || strstr(cmd_line, " |& ")) {
+    if (strstr(cmd_line, "|") != NULL || strstr(cmd_line, "|&")) {
         return new PipeCommand(cmd_line);
     }
     last_cmd_fg = false;
@@ -922,7 +918,12 @@ PipeCommand::PipeCommand(const char *cmd_line) : Command(cmd_line) {
     string s = string(cmd_line);
     delimiter = s.find("|&") == std::string::npos ? "|" : "|&";
     command1 = s.substr(0, s.find(delimiter));
-    command2 = s.substr(s.find(delimiter) + 1, s.length());
+    if(delimiter == "|"){
+        command2 = s.substr(s.find(delimiter) + 1, s.length());
+    } else {
+        command2 = s.substr(s.find(delimiter) + 2, s.length());
+    }
+
 }
 
 void PipeCommand::execute() {
@@ -1033,12 +1034,12 @@ void PipeCommand::execute() {
     if (close(filedes[1]) == SYS_FAIL) {
         perror("smash error: close failed");
     }
-    if (wait(NULL) == SYS_FAIL) {
-        perror("smash error: wait failed");
+    if (waitpid(pid1,NULL, WUNTRACED) == SYS_FAIL) {
+        perror("smash error: waitpid failed");
         return;
     }
-    if (wait(NULL) == SYS_FAIL) {
-        perror("smash error: wait failed");
+    if (waitpid(pid2,NULL, WUNTRACED) == SYS_FAIL) {
+        perror("smash error: waitpid failed");
         return;
     }
 }

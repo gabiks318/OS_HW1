@@ -20,7 +20,6 @@ int main(int argc, char* argv[]) {
 
 
     SmallShell& smash = SmallShell::getInstance();
-
     while(true) {
         smash.is_pipe = false;
         std::cout << smash.smash_prompt <<"> ";
@@ -28,7 +27,7 @@ int main(int argc, char* argv[]) {
         std::getline(std::cin, cmd_line);
         smash.executeCommand(cmd_line.c_str());
         if(smash.is_pipe)
-            exit(0);
+            break;
     }
     return 0;
 }
