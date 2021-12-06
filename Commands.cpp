@@ -4,8 +4,6 @@
 #include <sstream>
 #include <sys/wait.h>
 #include <fcntl.h>
-#include <exception>
-#include <chrono>
 #include "Commands.h"
 
 using namespace std;
@@ -174,41 +172,40 @@ Command *SmallShell::CreateCommand(const char *cmd_line, bool is_alarm) {
 
     string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
 
-    if (strstr(cmd_line, ">") != NULL || strstr(cmd_line, ">>") != NULL) {
+    if (strstr(cmd_line, ">") != nullptr || strstr(cmd_line, ">>") != nullptr) {
         return new RedirectionCommand(cmd_line);
     }
 
-    if (strstr(cmd_line, "|") != NULL || strstr(cmd_line, "|&")) {
+    if (strstr(cmd_line, "|") != nullptr || strstr(cmd_line, "|&")) {
         return new PipeCommand(cmd_line);
     }
     last_cmd_fg = false;
-    if (firstWord.compare("chprompt") == 0) {
+    if (firstWord =="chprompt") {
         return new ChpromptCommand(cmd_line);
-    } else if (firstWord.compare("showpid") == 0) {
+    } else if (firstWord =="showpid") {
         return new ShowPidCommand(cmd_line);
-    } else if (firstWord.compare("pwd") == 0) {
+    } else if (firstWord == "pwd") {
         return new GetCurrDirCommand(cmd_line);
-    } else if (firstWord.compare("cd") == 0) {
+    } else if (firstWord == "cd") {
         return new ChangeDirCommand(cmd_line, &last_directory);
-    } else if (firstWord.compare("jobs") == 0) {
+    } else if (firstWord == "jobs") {
         return new JobsCommand(cmd_line);
-    } else if (firstWord.compare("kill") == 0) {
+    } else if (firstWord == "kill") {
         return new KillCommand(cmd_line);
-    } else if (firstWord.compare("fg") == 0) {
+    } else if (firstWord == "fg") {
         last_cmd_fg = true;
         return new ForegroundCommand(cmd_line);
-    } else if (firstWord.compare("bg") == 0) {
+    } else if (firstWord == "bg") {
         return new BackgroundCommand(cmd_line);
-    } else if (firstWord.compare("quit") == 0) {
+    } else if (firstWord == "quit") {
         return new QuitCommand(cmd_line);
-    } else if ((firstWord.compare("head") == 0)) {
+    } else if (firstWord == "head") {
         return new HeadCommand(cmd_line);
-    } else if (firstWord.compare("timeout") == 0) {
+    } else if (firstWord == "timeout") {
         return new TimeoutCommand(cmd_line);
     } else {
         return new ExternalCommand(cmd_line, is_alarm);
     }
-
 }
 
 void SmallShell::executeCommand(const char *cmd_line, bool alarm) {
@@ -236,7 +233,6 @@ JobsList::JobEntry::JobEntry(int job_id, pid_t job_pid, time_t time_created, std
 JobsList::JobsList() : job_list(), max_job_id(1) {
 }
 
-JobsList::~JobsList() {}
 
 void JobsList::removeFinishedJobs() {
     if (job_list.empty()) {
@@ -258,8 +254,9 @@ void JobsList::removeFinishedJobs() {
     }
 
     int curr_max = 0;
-    for (auto it = job_list.begin(); it != job_list.end(); ++it) {
-        auto job = *it;
+    //for (auto it = job_list.begin(); it != job_list.end(); ++it) {
+    for(auto& job : job_list){
+        //auto job = *it;
         if (job.job_id > curr_max) {
             curr_max = job.job_id;
         }
@@ -269,18 +266,16 @@ void JobsList::removeFinishedJobs() {
 }
 
 JobsList::JobEntry *JobsList::getJobById(int jobId) {
-    for (auto it = job_list.begin(); it != job_list.end(); ++it) {
-        auto job = *it;
+    for(auto& job : job_list){
         if (job.job_id == jobId) {
-            return &(*it);
+            return &job;
         }
     }
     return nullptr;
 }
 
 void JobsList::killAllJobs() {
-    for (auto it = job_list.begin(); it != job_list.end(); ++it) {
-        auto job = *it;
+    for(auto& job : job_list){
         cout << job.job_pid << ": " << job.command << endl;
         kill(job.job_pid, SIGKILL);
     }
@@ -288,8 +283,7 @@ void JobsList::killAllJobs() {
 
 JobsList::JobEntry *JobsList::getLastJob(int *lastJobId) {
     int max_job_found = -1;
-    for (auto it = job_list.begin(); it != job_list.end(); ++it) {
-        auto job = *it;
+    for(auto& job : job_list){
         if (job.job_id > max_job_found) {
             max_job_found = job.job_id;
         }
@@ -300,8 +294,7 @@ JobsList::JobEntry *JobsList::getLastJob(int *lastJobId) {
 
 JobsList::JobEntry *JobsList::getLastStoppedJob(int *jobId) {
     int max_stopped = -1;
-    for (auto it = job_list.begin(); it != job_list.end(); ++it) {
-        auto job = *it;
+    for(auto& job : job_list) {
         if (job.isStopped) {
             max_stopped = job.job_id;
         }
@@ -1034,11 +1027,11 @@ void PipeCommand::execute() {
     if (close(filedes[1]) == SYS_FAIL) {
         perror("smash error: close failed");
     }
-    if (waitpid(pid1,NULL, WUNTRACED) == SYS_FAIL) {
+    if (waitpid(pid1,nullptr, WUNTRACED) == SYS_FAIL) {
         perror("smash error: waitpid failed");
         return;
     }
-    if (waitpid(pid2,NULL, WUNTRACED) == SYS_FAIL) {
+    if (waitpid(pid2,nullptr, WUNTRACED) == SYS_FAIL) {
         perror("smash error: waitpid failed");
         return;
     }
@@ -1047,13 +1040,13 @@ void PipeCommand::execute() {
 AlarmList::AlarmList() : alarms() {}
 
 void AlarmList::add_alarm(std::string command, time_t duration, pid_t pid) {
-    alarms.push_back(AlarmEntry(command, time(NULL), duration, pid));
+    alarms.push_back(AlarmEntry(command, time(nullptr), duration, pid));
 }
 
 void AlarmList::delete_alarms() {
     for (auto it = alarms.begin(); it != alarms.end(); ++it) {
         auto alarm_entry = *it;
-        if (time(NULL) >= alarm_entry.time_limit) {
+        if (time(nullptr) >= alarm_entry.time_limit) {
             cout << "smash: timeout " << alarm_entry.duration << " " << alarm_entry.command << " timed out!" << endl;
             kill(alarm_entry.pid, SIGINT);
             alarms.erase(it);

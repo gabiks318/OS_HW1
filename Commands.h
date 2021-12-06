@@ -2,9 +2,9 @@
 #define SMASH_COMMAND_H_
 
 #include <vector>
-#include <string.h>
+#include <cstring>
 #include <string>
-#include <time.h>
+#include <ctime>
 #include <sys/wait.h>
 
 
@@ -15,9 +15,9 @@ class Command {
 protected:
     const char* cmd_line;
 public:
-    Command(const char *cmd_line);
+    explicit Command(const char *cmd_line);
 
-    virtual ~Command() {};
+    virtual ~Command() = default;;
 
     virtual void execute() = 0;
     const char* get_cmd_line(){return cmd_line;}
@@ -25,7 +25,7 @@ public:
 
 class BuiltInCommand : public Command {
 public:
-    BuiltInCommand(const char *cmd_line);
+    explicit BuiltInCommand(const char *cmd_line);
 
     virtual ~BuiltInCommand() {
         delete this->cmd_line;
@@ -37,7 +37,7 @@ class ExternalCommand : public Command {
 public:
     ExternalCommand(const char *cmd_line, bool is_alarm);
 
-    virtual ~ExternalCommand() {}
+    virtual ~ExternalCommand() = default;
 
     void execute() override;
 };
@@ -47,9 +47,9 @@ class PipeCommand : public Command {
     std::string command2;
     std::string delimiter;
 public:
-    PipeCommand(const char *cmd_line);
+    explicit PipeCommand(const char *cmd_line);
 
-    virtual ~PipeCommand() {}
+    virtual ~PipeCommand() = default;
 
     void execute() override;
 };
@@ -64,7 +64,7 @@ class RedirectionCommand : public Command {
 public:
     explicit RedirectionCommand(const char *cmd_line);
 
-    virtual ~RedirectionCommand() {}
+    virtual ~RedirectionCommand() = default;
 
     void execute() override;
     void prepare();
@@ -73,9 +73,9 @@ public:
 
 class ChpromptCommand : public BuiltInCommand {
 public:
-    ChpromptCommand(const char *cmd_line);
+    explicit ChpromptCommand(const char *cmd_line);
 
-    virtual  ~ChpromptCommand() {}
+    virtual  ~ChpromptCommand() = default;
 
     void execute() override;
 };
@@ -85,25 +85,25 @@ public:
     char **plastPwd;
     ChangeDirCommand(const char *cmd_line, char **plastPwd);
 
-    virtual ~ChangeDirCommand() {}
+    virtual ~ChangeDirCommand() = default;
 
     void execute() override;
 };
 
 class GetCurrDirCommand : public BuiltInCommand {
 public:
-    GetCurrDirCommand(const char *cmd_line);
+    explicit GetCurrDirCommand(const char *cmd_line);
 
-    virtual ~GetCurrDirCommand() {}
+    virtual ~GetCurrDirCommand() = default;
 
     void execute() override;
 };
 
 class ShowPidCommand : public BuiltInCommand {
 public:
-    ShowPidCommand(const char *cmd_line);
+    explicit ShowPidCommand(const char *cmd_line);
 
-    virtual ~ShowPidCommand() {}
+    virtual ~ShowPidCommand() = default;
 
     void execute() override;
 };
@@ -113,9 +113,9 @@ class JobsList;
 class QuitCommand : public BuiltInCommand {
 public:
 
-    QuitCommand(const char *cmd_line);
+    explicit QuitCommand(const char *cmd_line);
 
-    virtual ~QuitCommand() {}
+    virtual ~QuitCommand() = default;
 
     void execute() override;
 };
@@ -130,7 +130,7 @@ public:
         time_t time_limit;
         pid_t pid;
         AlarmEntry(std::string command, time_t time_created, time_t duration, pid_t pid);
-        ~AlarmEntry()= default;
+        ~AlarmEntry() = default;
     };
 
     std::vector<AlarmEntry> alarms;
@@ -158,7 +158,7 @@ public:
 
     JobsList();
 
-    ~JobsList();
+    ~JobsList() = default;
 
     void addJob(Command *cmd, pid_t pid, bool last_cmd_fg = false ,bool isStopped = false);
 
@@ -178,9 +178,9 @@ public:
 class JobsCommand : public BuiltInCommand {
 
 public:
-    JobsCommand(const char *cmd_line);
+    explicit JobsCommand(const char *cmd_line);
 
-    virtual ~JobsCommand() {}
+    virtual ~JobsCommand() = default;
 
     void execute() override;
 };
@@ -188,9 +188,9 @@ public:
 class KillCommand : public BuiltInCommand {
 
 public:
-    KillCommand(const char *cmd_line);
+    explicit KillCommand(const char *cmd_line);
 
-    virtual ~KillCommand() {}
+    virtual ~KillCommand() = default;
 
     void execute() override;
 };
@@ -198,9 +198,9 @@ public:
 class ForegroundCommand : public BuiltInCommand {
 
 public:
-    ForegroundCommand(const char *cmd_line);
+    explicit ForegroundCommand(const char *cmd_line);
 
-    virtual ~ForegroundCommand() {}
+    virtual ~ForegroundCommand() = default;
 
     void execute() override;
 };
@@ -209,27 +209,27 @@ public:
 class BackgroundCommand : public BuiltInCommand {
 
 public:
-    BackgroundCommand(const char *cmd_line);
+    explicit BackgroundCommand(const char *cmd_line);
 
-    virtual ~BackgroundCommand(){}
+    virtual ~BackgroundCommand() = default;
 
     void execute() override;
 };
 
 class HeadCommand : public BuiltInCommand {
 public:
-    HeadCommand(const char *cmd_line);
+    explicit HeadCommand(const char *cmd_line);
 
-    virtual ~HeadCommand() {}
+    virtual ~HeadCommand() = default;
 
     void execute() override;
 };
 
 class TimeoutCommand: public Command{
 public:
-    TimeoutCommand(const char* cmd_line);
+    explicit TimeoutCommand(const char* cmd_line);
 
-    virtual ~TimeoutCommand(){}
+    virtual ~TimeoutCommand() = default;
 
     void execute() override;
 };

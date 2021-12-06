@@ -8,28 +8,28 @@
 		<Option virtualFolders="CMake Files\;"/>
 		<Build>
 			<Target title="all">
-				<Option working_dir="/tmp/tmp.r4UJiUMNHi/cmake-build-debug"/>
+				<Option working_dir="/tmp/OS_HW1/cmake-build-debug"/>
 				<Option type="4"/>
 				<MakeCommands>
-					<Build command="/usr/bin/make -j2 -f &quot;/tmp/tmp.r4UJiUMNHi/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
-					<CompileFile command="/usr/bin/make -j2 -f &quot;/tmp/tmp.r4UJiUMNHi/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j2 -f &quot;/tmp/tmp.r4UJiUMNHi/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j2 -f &quot;/tmp/tmp.r4UJiUMNHi/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="/usr/bin/make -j2 -f &quot;/tmp/OS_HW1/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j2 -f &quot;/tmp/OS_HW1/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j2 -f &quot;/tmp/OS_HW1/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j2 -f &quot;/tmp/OS_HW1/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="rebuild_cache">
-				<Option working_dir="/tmp/tmp.r4UJiUMNHi/cmake-build-debug"/>
+				<Option working_dir="/tmp/OS_HW1/cmake-build-debug"/>
 				<Option type="4"/>
 				<MakeCommands>
-					<Build command="/usr/bin/make -j2 -f &quot;/tmp/tmp.r4UJiUMNHi/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
-					<CompileFile command="/usr/bin/make -j2 -f &quot;/tmp/tmp.r4UJiUMNHi/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j2 -f &quot;/tmp/tmp.r4UJiUMNHi/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j2 -f &quot;/tmp/tmp.r4UJiUMNHi/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="/usr/bin/make -j2 -f &quot;/tmp/OS_HW1/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j2 -f &quot;/tmp/OS_HW1/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j2 -f &quot;/tmp/OS_HW1/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j2 -f &quot;/tmp/OS_HW1/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="os_hw1">
-				<Option output="/tmp/tmp.r4UJiUMNHi/cmake-build-debug/os_hw1" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="/tmp/tmp.r4UJiUMNHi/cmake-build-debug"/>
+				<Option output="/tmp/OS_HW1/cmake-build-debug/os_hw1" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/tmp/OS_HW1/cmake-build-debug"/>
 				<Option object_output="./"/>
 				<Option type="1"/>
 				<Option compiler="gcc"/>
@@ -44,15 +44,15 @@
 					<Add directory="/usr/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="/usr/bin/make -j2 -f &quot;/tmp/tmp.r4UJiUMNHi/cmake-build-debug/Makefile&quot;  VERBOSE=1 os_hw1"/>
-					<CompileFile command="/usr/bin/make -j2 -f &quot;/tmp/tmp.r4UJiUMNHi/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j2 -f &quot;/tmp/tmp.r4UJiUMNHi/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j2 -f &quot;/tmp/tmp.r4UJiUMNHi/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="/usr/bin/make -j2 -f &quot;/tmp/OS_HW1/cmake-build-debug/Makefile&quot;  VERBOSE=1 os_hw1"/>
+					<CompileFile command="/usr/bin/make -j2 -f &quot;/tmp/OS_HW1/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j2 -f &quot;/tmp/OS_HW1/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j2 -f &quot;/tmp/OS_HW1/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="os_hw1/fast">
-				<Option output="/tmp/tmp.r4UJiUMNHi/cmake-build-debug/os_hw1" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="/tmp/tmp.r4UJiUMNHi/cmake-build-debug"/>
+				<Option output="/tmp/OS_HW1/cmake-build-debug/os_hw1" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/tmp/OS_HW1/cmake-build-debug"/>
 				<Option object_output="./"/>
 				<Option type="1"/>
 				<Option compiler="gcc"/>
@@ -67,39 +67,39 @@
 					<Add directory="/usr/include"/>
 				</Compiler>
 				<MakeCommands>
-					<Build command="/usr/bin/make -j2 -f &quot;/tmp/tmp.r4UJiUMNHi/cmake-build-debug/Makefile&quot;  VERBOSE=1 os_hw1/fast"/>
-					<CompileFile command="/usr/bin/make -j2 -f &quot;/tmp/tmp.r4UJiUMNHi/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j2 -f &quot;/tmp/tmp.r4UJiUMNHi/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j2 -f &quot;/tmp/tmp.r4UJiUMNHi/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="/usr/bin/make -j2 -f &quot;/tmp/OS_HW1/cmake-build-debug/Makefile&quot;  VERBOSE=1 os_hw1/fast"/>
+					<CompileFile command="/usr/bin/make -j2 -f &quot;/tmp/OS_HW1/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j2 -f &quot;/tmp/OS_HW1/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j2 -f &quot;/tmp/OS_HW1/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 			<Target title="edit_cache">
-				<Option working_dir="/tmp/tmp.r4UJiUMNHi/cmake-build-debug"/>
+				<Option working_dir="/tmp/OS_HW1/cmake-build-debug"/>
 				<Option type="4"/>
 				<MakeCommands>
-					<Build command="/usr/bin/make -j2 -f &quot;/tmp/tmp.r4UJiUMNHi/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
-					<CompileFile command="/usr/bin/make -j2 -f &quot;/tmp/tmp.r4UJiUMNHi/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j2 -f &quot;/tmp/tmp.r4UJiUMNHi/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j2 -f &quot;/tmp/tmp.r4UJiUMNHi/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<Build command="/usr/bin/make -j2 -f &quot;/tmp/OS_HW1/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j2 -f &quot;/tmp/OS_HW1/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j2 -f &quot;/tmp/OS_HW1/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j2 -f &quot;/tmp/OS_HW1/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
 		</Build>
-		<Unit filename="/tmp/tmp.r4UJiUMNHi/Commands.cpp">
+		<Unit filename="/tmp/OS_HW1/Commands.cpp">
 			<Option target="os_hw1"/>
 		</Unit>
-		<Unit filename="/tmp/tmp.r4UJiUMNHi/Commands.h">
+		<Unit filename="/tmp/OS_HW1/Commands.h">
 			<Option target="os_hw1"/>
 		</Unit>
-		<Unit filename="/tmp/tmp.r4UJiUMNHi/signals.cpp">
+		<Unit filename="/tmp/OS_HW1/signals.cpp">
 			<Option target="os_hw1"/>
 		</Unit>
-		<Unit filename="/tmp/tmp.r4UJiUMNHi/signals.h">
+		<Unit filename="/tmp/OS_HW1/signals.h">
 			<Option target="os_hw1"/>
 		</Unit>
-		<Unit filename="/tmp/tmp.r4UJiUMNHi/smash.cpp">
+		<Unit filename="/tmp/OS_HW1/smash.cpp">
 			<Option target="os_hw1"/>
 		</Unit>
-		<Unit filename="/tmp/tmp.r4UJiUMNHi/CMakeLists.txt">
+		<Unit filename="/tmp/OS_HW1/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\"/>
 		</Unit>
 	</Project>
