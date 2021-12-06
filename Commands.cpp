@@ -99,6 +99,7 @@ bool is_number(const std::string &s) {
 
 bool _isBackgroundCommand(const char *cmd_line) {
     const string str(cmd_line);
+    //cmd_line->substr(0, cmd_line->find_first_of(" \n"));
     return str[str.find_last_not_of(WHITESPACE)] == '&';
 }
 
@@ -159,11 +160,16 @@ void SmallShell::setLastDirectory(char *dir) {
 /**
 * Creates and returns a pointer to Command class which matches the given command line (cmd_line)
 */
+
+bool checker(string cmd_s){
+    string cmd = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
+    return (cmd == "showpid&") || (cmd == "cd&") || (cmd == "pwd&")|| (cmd == "fg&")|| (cmd == "bg&")
+            || (cmd == "chprompt&") || (cmd == "kill&")|| (cmd == "quit&")|| (cmd == "head&");
+}
 Command *SmallShell::CreateCommand(const char *cmd_line, bool is_alarm) {
 
-
     string cmd_s = _trim(string(cmd_line)); //REMOVE WHITESPACES
-    if (_isBackgroundCommand(cmd_s.c_str())) {
+    if (!checker(cmd_s) && _isBackgroundCommand(cmd_s.c_str())) {
         char cmd_line_copy[COMMAND_ARGS_MAX_LENGTH];
         strcpy(cmd_line_copy, cmd_s.c_str());
         _removeBackgroundSign(cmd_line_copy);
