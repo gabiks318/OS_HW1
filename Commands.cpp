@@ -142,10 +142,16 @@ std::string SmallShell::smash_prompt = "smash";
 JobsList SmallShell::job_list;
 pid_t SmallShell::pid = getppid();
 
-SmallShell::SmallShell() : last_directory(nullptr), is_pipe(false), alarm_list(),
-                           current_process(-1), job_id_fg(-1), last_cmd_fg(false), current_cmd(), alarm_pid(-1),
-                           current_duration(0),
-                           foreground_alarm(false) {}
+SmallShell::SmallShell() : last_directory(nullptr), is_pipe(false),
+                           current_process(-1),
+                           job_id_fg(-1),
+                           last_cmd_fg(false),
+                           current_cmd(),
+                           alarm_list(),
+                           foreground_alarm(false),
+                           alarm_pid(-1),
+                           current_duration(0)
+                          {}
 
 SmallShell::~SmallShell() {
     if (last_directory) {
@@ -409,7 +415,6 @@ void ChangeDirCommand::execute() {
         perror("smash error: malloc failed");
         return;
     }
-    SmallShell &shell = SmallShell::getInstance();
 
     if (num_of_args > 2) {
         cerr << "smash error: cd: too many arguments" << endl;
