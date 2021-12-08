@@ -252,7 +252,8 @@ public:
     std::string current_cmd;
 
     AlarmList alarm_list;
-    bool foreground_alarm;
+    std::string current_alarm_cmd;
+    bool fg_alarm;
     pid_t alarm_pid;
     time_t current_duration;
 

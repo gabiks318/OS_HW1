@@ -37,8 +37,15 @@ void ctrlCHandler(int sig_num) {
 }
 
 void alarmHandler(int sig_num) {
-  cout << "smash: got an alarm" << endl;
-  SmallShell& shell = SmallShell::getInstance();
-  shell.alarm_list.delete_alarms();
+    cout << "smash: got an alarm" << endl;
+    SmallShell& shell = SmallShell::getInstance();
+    if(shell.fg_alarm){
+        kill(shell.current_process, SIGKILL);
+        cout << "smash: " << shell.current_alarm_cmd << " timed out!" << endl;
+        shell.fg_alarm = false;
+        shell.current_alarm_cmd = "";
+    } else {
+        shell.alarm_list.delete_alarms();
+    }
 }
 
