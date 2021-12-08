@@ -148,7 +148,8 @@ SmallShell::SmallShell() : last_directory(nullptr), is_pipe(false),
                            last_cmd_fg(false),
                            current_cmd(),
                            alarm_list(),
-                           foreground_alarm(false),
+                           current_alarm_cmd(),
+                           fg_alarm(false),
                            alarm_pid(-1),
                            current_duration(0)
                           {}
@@ -231,6 +232,7 @@ void SmallShell::executeCommand(const char *cmd_line, bool alarm) {
     current_process = -1;
     current_duration = 0;
     current_cmd = "";
+    current_alarm_cmd = "";
 }
 
 /////////////////////////////--------------Job List implementation-------//////////////////////////////
@@ -820,15 +822,12 @@ void ExternalCommand::execute() {
         } else {
             smash.current_process = pid;
             smash.current_cmd = cmd_line;
-            if (is_alarm)
+            if (is_alarm){
                 is_alarm = true;
+                smash.fg_alarm = true;
+            }
             int status;
             if (waitpid(pid, &status, WUNTRACED) == SYS_FAIL) {
-                if (is_alarm) {
-                    is_alarm = false;
-//                    cout << "meir_alarm" << endl;
-                    return;
-                }
                 perror("smash error: waitpid failed");
                 return;
             }
@@ -1055,6 +1054,9 @@ void AlarmList::add_alarm(std::string command, time_t duration, pid_t pid) {
 }
 
 void AlarmList::delete_alarms() {
+    if(alarms.empty())
+        return;
+
     for (auto it = alarms.begin(); it != alarms.end(); ++it) {
         auto alarm_entry = *it;
         if (time(nullptr) >= alarm_entry.time_limit) {
@@ -1098,21 +1100,17 @@ void TimeoutCommand::execute() {
     }
     SmallShell &shell = SmallShell::getInstance();
 
-    if (fork() == 0) {
-        setpgrp();
-
-        usleep(delay * 1000000);
-        kill(shell.pid, SIGALRM);
-        exit(0);
-    }
+    alarm(delay);
     string new_cmd_line;
     for (int i = 2; i < num_of_args; i++) {
         new_cmd_line.append(string(args[i]));
         new_cmd_line.append(" ");
     }
     shell.current_duration = delay;
+    char cmd_line_copy[COMMAND_ARGS_MAX_LENGTH];
+    strcpy(cmd_line_copy, cmd_line);
+    shell.current_alarm_cmd = string(cmd_line_copy);
     shell.executeCommand(new_cmd_line.c_str(), true);
-//    cout << "finished timeout" << endl;
     free_args(args, num_of_args);
 }
 

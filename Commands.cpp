@@ -148,10 +148,10 @@ SmallShell::SmallShell() : last_directory(nullptr), is_pipe(false),
                            last_cmd_fg(false),
                            current_cmd(),
                            alarm_list(),
+                           current_alarm_cmd(),
                            fg_alarm(false),
                            alarm_pid(-1),
-                           current_duration(0),
-                           current_alarm_cmd()
+                           current_duration(0)
                           {}
 
 SmallShell::~SmallShell() {
